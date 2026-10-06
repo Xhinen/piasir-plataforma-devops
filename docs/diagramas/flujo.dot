@@ -1,0 +1,24 @@
+digraph flujo {
+  rankdir=TB; bgcolor="white"; nodesep=0.3; ranksep=0.35;
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=11,
+        fillcolor="#E8EDF5", color="#1F3864", width=3.4, height=0.55];
+  edge [fontname="Arial", fontsize=9, color="#44546A", arrowsize=0.7];
+
+  e1 [label="1 · El desarrollador publica el cambio\nen la forja interna"];
+  e2 [label="2 · La integración continua construye\nla imagen del contenedor"];
+  e3 [label="3 · Análisis de vulnerabilidades\nde la imagen", fillcolor="#FDF3E7", color="#B06A00"];
+  stop [label="Flujo detenido", shape=box, style="rounded,filled",
+        fillcolor="#F7E4E4", color="#A33A3A", width=1.6, height=0.45, fontsize=10];
+  e4 [label="4 · Publicación en el registro\ninterno con etiqueta de versión"];
+  e5 [label="5 · Actualización de la referencia\nen el repositorio de manifiestos"];
+  e6 [label="6 · El controlador detecta la diferencia\ny sincroniza el clúster"];
+  e7 [label="7 · Reparto progresivo del tráfico\nhacia la nueva versión"];
+
+  e1 -> e2 -> e3;
+  e3 -> stop  [label="  vulnerabilidad crítica", color="#A33A3A", fontcolor="#A33A3A"];
+  e3 -> e4    [label="  sin hallazgos críticos"];
+  e4 -> e5 -> e6 -> e7;
+  e7 -> e6 [label="  reversión desde el repositorio  ", constraint=false,
+            style=dashed, color="#1F3864", fontcolor="#1F3864"];
+  { rank=same; e3; stop; }
+}

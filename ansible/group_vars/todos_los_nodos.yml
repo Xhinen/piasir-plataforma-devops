@@ -1,0 +1,20 @@
+---
+# Variables comunes a todas las maquinas gestionadas.
+# Las versiones se fijan de forma explicita: una etiqueta movil hace que dos
+# despliegues aparentemente identicos ejecuten software distinto.
+
+zona_horaria: "Europe/Madrid"
+locale_sistema: "es_ES.UTF-8"
+
+# Endurecimiento
+ssh_permitir_root: false
+ssh_autenticacion_por_clave_unicamente: true
+cortafuegos_politica_entrada: "deny"
+
+# Versiones fijadas
+version_kubernetes: "1.36.2"
+version_containerd: "2.2.6"
+version_calico: "3.32.0"
+
+# Red del cluster
+cidr_pods: "10.244.0.0/16"
