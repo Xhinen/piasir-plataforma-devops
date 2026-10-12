@@ -1,0 +1,19 @@
+---
+# Alta de un nodo del cluster desde cero.
+#   ansible-playbook -i inventario/produccion.ini playbooks/nodo-kubernetes.yml \
+#     --limit k8s-worker-02 --check --diff
+#
+# Deja la maquina lista para ejecutar el 'kubeadm join'. La union al cluster no
+# se automatiza aqui a proposito: el comando lleva un token con caducidad y una
+# huella del certificado del plano de control, y esos datos no deben vivir en
+# el repositorio. Se obtienen en el momento con:
+#   ssh k8smaster@192.168.18.54 "sudo kubeadm token create --print-join-command"
+
+- name: Preparar un nodo para incorporarlo al cluster
+  hosts: kubernetes
+  become: true
+  roles:
+    - comun
+    - endurecimiento
+    - containerd
+    - kubernetes_nodo

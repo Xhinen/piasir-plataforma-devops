@@ -1,0 +1,93 @@
+---
+# Rol kubernetes-nodo: deja la maquina en condiciones de ejecutar 'kubeadm'.
+# Son los prerrequisitos que la documentacion oficial exige y que, hechos a
+# mano, es facil olvidar en un nodo y no en otro.
+
+# --- Memoria de intercambio ----------------------------------------------
+# El planificador decide en funcion de la memoria realmente disponible; la
+# memoria de intercambio falsea esa medida.
+
+- name: Desactivar la memoria de intercambio en caliente
+  ansible.builtin.command: swapoff -a
+  when: ansible_swaptotal_mb | int > 0
+  changed_when: ansible_swaptotal_mb | int > 0
+
+- name: Desactivar la memoria de intercambio de forma permanente
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^(\s*[^#\n]+\s+swap\s+.*)$'
+    replace: '# \1'
+
+# --- Modulos del nucleo ---------------------------------------------------
+
+- name: Declarar los modulos necesarios para que persistan al reinicio
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/k8s.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      overlay
+      br_netfilter
+
+- name: Cargar los modulos ahora
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - overlay
+    - br_netfilter
+
+# --- Parametros de red ----------------------------------------------------
+
+- name: Habilitar el reenvio y el filtrado del trafico de los puentes
+  ansible.posix.sysctl:
+    name: "{{ item.clave }}"
+    value: "{{ item.valor }}"
+    sysctl_file: /etc/sysctl.d/k8s.conf
+    sysctl_set: true
+    reload: true
+  loop:
+    - { clave: "net.bridge.bridge-nf-call-iptables", valor: "1" }
+    - { clave: "net.bridge.bridge-nf-call-ip6tables", valor: "1" }
+    - { clave: "net.ipv4.ip_forward", valor: "1" }
+
+# --- Componentes de Kubernetes -------------------------------------------
+
+- name: Descargar la clave del repositorio de Kubernetes
+  ansible.builtin.get_url:
+    url: "https://pkgs.k8s.io/core:/stable:/{{ version_kubernetes_rama }}/deb/Release.key"
+    dest: /etc/apt/keyrings/kubernetes.asc
+    mode: "0644"
+
+- name: Registrar el repositorio de la rama fijada
+  ansible.builtin.apt_repository:
+    repo: >-
+      deb [signed-by=/etc/apt/keyrings/kubernetes.asc]
+      https://pkgs.k8s.io/core:/stable:/{{ version_kubernetes_rama }}/deb/ /
+    filename: kubernetes
+    state: present
+
+- name: Instalar kubelet, kubeadm y kubectl en la version fijada
+  ansible.builtin.apt:
+    name:
+      - "kubelet={{ version_kubernetes_paquete }}"
+      - "kubeadm={{ version_kubernetes_paquete }}"
+      - "kubectl={{ version_kubernetes_paquete }}"
+    state: present
+    update_cache: true
+    allow_downgrade: true
+
+- name: Impedir que una actualizacion desatendida cambie la version del cluster
+  ansible.builtin.dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: Asegurar que kubelet esta habilitado
+  ansible.builtin.systemd:
+    name: kubelet
+    enabled: true

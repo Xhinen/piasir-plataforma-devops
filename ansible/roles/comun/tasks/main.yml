@@ -1,0 +1,36 @@
+---
+# Rol comun: lo que debe cumplirse en cualquier maquina de la plataforma,
+# sea del cluster o no. Todas las tareas son idempotentes: describen el estado
+# deseado, no los pasos para llegar a el.
+
+- name: Fijar la zona horaria
+  community.general.timezone:
+    name: "{{ zona_horaria }}"
+
+- name: Asegurar que el servicio de hora esta activo
+  ansible.builtin.systemd:
+    name: chrony
+    enabled: true
+    state: started
+
+- name: Fijar el nombre de la maquina
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Registrar los nodos de la plataforma en /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^{{ hostvars[item].ansible_host }}\s'
+    line: "{{ hostvars[item].ansible_host }} {{ item }}"
+    state: present
+  loop: "{{ groups['todos_los_nodos'] }}"
+
+- name: Actualizar el indice de paquetes
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Instalar los paquetes base
+  ansible.builtin.apt:
+    name: "{{ paquetes_base }}"
+    state: present

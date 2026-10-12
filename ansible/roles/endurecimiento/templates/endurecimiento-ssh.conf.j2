@@ -1,0 +1,8 @@
+# Gestionado por Ansible — rol 'endurecimiento'. No editar a mano.
+PermitRootLogin {{ 'no' if not ssh_permitir_root else 'prohibit-password' }}
+PasswordAuthentication {{ 'no' if ssh_solo_clave else 'yes' }}
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+X11Forwarding no
+MaxAuthTries 3
+LoginGraceTime 30

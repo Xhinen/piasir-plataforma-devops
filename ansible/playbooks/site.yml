@@ -1,0 +1,18 @@
+---
+# Punto de entrada general: aplica a cada maquina lo que le corresponde.
+# Uso habitual, siempre en seco primero:
+#   ansible-playbook -i inventario/produccion.ini playbooks/site.yml --check --diff
+
+- name: Configuracion base y endurecimiento de todos los nodos
+  hosts: todos_los_nodos
+  become: true
+  roles:
+    - comun
+    - endurecimiento
+
+- name: Preparacion de los nodos del cluster
+  hosts: kubernetes
+  become: true
+  roles:
+    - containerd
+    - kubernetes_nodo

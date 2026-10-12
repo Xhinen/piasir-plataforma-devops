@@ -1,0 +1,7 @@
+---
+# Colecciones que usan los roles. El paquete 'ansible' de Arch/CachyOS ya las
+# incluye; con 'ansible-core' a secas hay que instalarlas:
+#   ansible-galaxy collection install -r requirements.yml
+collections:
+  - name: community.general
+  - name: ansible.posix

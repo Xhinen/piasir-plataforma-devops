@@ -1,0 +1,61 @@
+---
+# Rol de endurecimiento: reduce la superficie de ataque. Identico en las tres
+# maquinas, que es precisamente el motivo de automatizarlo.
+
+- name: Instalar las herramientas de endurecimiento
+  ansible.builtin.apt:
+    name:
+      - fail2ban
+      - unattended-upgrades
+    state: present
+
+# --- Acceso remoto --------------------------------------------------------
+# Se escribe un fichero propio en sshd_config.d en lugar de editar
+# sshd_config: asi la configuracion del proyecto queda separada de la de la
+# distribucion y se puede revertir borrando un unico fichero.
+
+- name: Configurar el acceso remoto
+  ansible.builtin.template:
+    src: endurecimiento-ssh.conf.j2
+    dest: /etc/ssh/sshd_config.d/60-endurecimiento.conf
+    owner: root
+    group: root
+    mode: "0644"
+    validate: "/usr/sbin/sshd -t -f %s"
+  notify: Reiniciar ssh
+
+# --- Bloqueo de intentos de acceso ---------------------------------------
+
+- name: Configurar el bloqueo de intentos fallidos
+  ansible.builtin.copy:
+    dest: /etc/fail2ban/jail.d/sshd-proyecto.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [sshd]
+      enabled  = true
+      maxretry = {{ fail2ban_maxretry }}
+      bantime  = {{ fail2ban_bantime }}
+  notify: Reiniciar fail2ban
+
+- name: Asegurar que el bloqueo esta activo
+  ansible.builtin.systemd:
+    name: fail2ban
+    enabled: true
+    state: started
+
+# --- Actualizaciones de seguridad ----------------------------------------
+# Se aplican solas, pero NO se reinicia la maquina: un reinicio inesperado de
+# un nodo del cluster es peor que un parche aplicado unas horas mas tarde.
+
+- name: Aplicar parches de seguridad de forma desatendida, sin reiniciar
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/52-proyecto-unattended
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+      Unattended-Upgrade::Automatic-Reboot "false";

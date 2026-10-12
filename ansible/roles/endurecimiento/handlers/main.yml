@@ -1,0 +1,10 @@
+---
+- name: Reiniciar ssh
+  ansible.builtin.systemd:
+    name: ssh
+    state: reloaded
+
+- name: Reiniciar fail2ban
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: restarted

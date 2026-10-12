@@ -1,0 +1,59 @@
+---
+# Rol containerd: runtime de contenedores del cluster.
+# El parametro que importa es SystemdCgroup. Si kubelet y el runtime no
+# coinciden en el gestor de grupos de control, el cluster no falla de golpe:
+# presenta inestabilidad intermitente bajo carga, mucho mas dificil de
+# diagnosticar que un fallo limpio.
+
+- name: Crear el directorio de claves de repositorio
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: Descargar la clave del repositorio de Docker
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: "0644"
+
+- name: Registrar el repositorio de Docker
+  ansible.builtin.apt_repository:
+    repo: >-
+      deb [arch={{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }}
+      signed-by=/etc/apt/keyrings/docker.asc]
+      https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+    filename: docker
+    state: present
+
+- name: Instalar containerd en la version fijada
+  ansible.builtin.apt:
+    name: "containerd.io={{ version_containerd_paquete }}"
+    state: present
+    update_cache: true
+    allow_downgrade: true
+
+- name: Impedir que una actualizacion desatendida cambie la version
+  ansible.builtin.dpkg_selections:
+    name: containerd.io
+    selection: hold
+
+- name: Generar la configuracion por defecto si aun no existe
+  ansible.builtin.shell:
+    cmd: containerd config default > /etc/containerd/config.toml
+    creates: /etc/containerd/config.toml
+  notify: Reiniciar containerd
+
+- name: Usar el gestor de grupos de control de systemd
+  ansible.builtin.lineinfile:
+    path: /etc/containerd/config.toml
+    regexp: '^(\s*)SystemdCgroup\s*='
+    line: '\1SystemdCgroup = true'
+    backrefs: true
+  notify: Reiniciar containerd
+
+- name: Asegurar que containerd esta activo
+  ansible.builtin.systemd:
+    name: containerd
+    enabled: true
+    state: started
