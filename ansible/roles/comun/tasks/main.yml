@@ -2,35 +2,79 @@
 # Rol comun: lo que debe cumplirse en cualquier maquina de la plataforma,
 # sea del cluster o no. Todas las tareas son idempotentes: describen el estado
 # deseado, no los pasos para llegar a el.
+#
+# El orden importa: primero se instala el software, despues se configura y por
+# ultimo se arrancan los servicios. Configurar un servicio que aun no existe
+# falla, y es un error facil de cometer al escribir roles.
 
-- name: Fijar la zona horaria
-  community.general.timezone:
-    name: "{{ zona_horaria }}"
-
-- name: Asegurar que el servicio de hora esta activo
-  ansible.builtin.systemd:
-    name: chrony
-    enabled: true
-    state: started
-
-- name: Fijar el nombre de la maquina
-  ansible.builtin.hostname:
-    name: "{{ inventory_hostname }}"
-
-- name: Registrar los nodos de la plataforma en /etc/hosts
-  ansible.builtin.lineinfile:
-    path: /etc/hosts
-    regexp: '^{{ hostvars[item].ansible_host }}\s'
-    line: "{{ hostvars[item].ansible_host }} {{ item }}"
-    state: present
-  loop: "{{ groups['todos_los_nodos'] }}"
+# --- Paquetes -------------------------------------------------------------
 
 - name: Actualizar el indice de paquetes
   ansible.builtin.apt:
     update_cache: true
     cache_valid_time: 3600
 
+# Refrescar el indice de paquetes no altera la configuracion de la maquina:
+# es una cache local que apt reconstruye cuando caduca. Informarlo como
+# cambio produce un falso positivo que enmascara los cambios reales en la
+# comprobacion de idempotencia.
+
+  changed_when: false
+
 - name: Instalar los paquetes base
   ansible.builtin.apt:
     name: "{{ paquetes_base }}"
     state: present
+
+# El modulo que gestiona los repositorios necesita la biblioteca
+# python3-debian en el nodo, incluso para simular los cambios. Esta tarea se
+# ejecuta tambien durante el modo comprobacion (check_mode: false), porque sin
+# ella el resto del playbook ni siquiera puede evaluarse. Es la unica
+# excepcion deliberada al principio de que una ejecucion en seco no modifica
+# nada, y se deja documentada como tal.
+- name: Instalar la biblioteca necesaria para gestionar repositorios
+  ansible.builtin.apt:
+    name: python3-debian
+    state: present
+  check_mode: false
+
+# --- Identidad de la maquina ---------------------------------------------
+
+- name: Fijar el nombre de la maquina
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+
+# Se emplea un bloque delimitado en lugar de editar lineas sueltas: Ansible
+# gestiona unicamente lo que hay entre sus marcas y no altera las entradas que
+# el administrador haya anadido por su cuenta. Una version anterior de este rol
+# buscaba por direccion IP y habria eliminado un alias existente.
+- name: Registrar los nodos de la plataforma en /etc/hosts
+  ansible.builtin.blockinfile:
+    path: /etc/hosts
+    marker: "# {mark} NODOS DE LA PLATAFORMA (gestionado por Ansible)"
+    block: |
+      {% for nodo in groups['todos_los_nodos'] | sort %}
+      {{ hostvars[nodo].ansible_host }} {{ nodo }}
+      {% endfor %}
+    state: present
+
+# --- Hora ----------------------------------------------------------------
+# Un cluster de Kubernetes necesita que los relojes de sus nodos esten
+# sincronizados: los certificados, los tokens y la correlacion de registros
+# dependen de ello. Se emplea chrony en lugar del servicio por defecto de la
+# distribucion por su mejor comportamiento ante saltos de reloj y porque
+# expone metricas de desviacion consultables.
+
+- name: Fijar la zona horaria
+  community.general.timezone:
+    name: "{{ zona_horaria }}"
+
+# En modo comprobacion los paquetes no llegan a instalarse, de modo que un
+# servicio que aun no existe haria fallar la tarea. Se omite en ese modo: en
+# una ejecucion real la tarea anterior ya ha instalado chrony.
+- name: Asegurar que el servicio de hora esta activo
+  ansible.builtin.systemd:
+    name: chrony
+    enabled: true
+    state: started
+  when: not ansible_check_mode

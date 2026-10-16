@@ -18,13 +18,23 @@
     mode: "0644"
 
 - name: Registrar el repositorio de Docker
-  ansible.builtin.apt_repository:
-    repo: >-
-      deb [arch={{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }}
-      signed-by=/etc/apt/keyrings/docker.asc]
-      https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
-    filename: docker
+  ansible.builtin.deb822_repository:
+    name: docker
+    types: [deb]
+    uris: "https://download.docker.com/linux/ubuntu"
+    suites: ["{{ ansible_facts['distribution_release'] }}"]
+    components: [stable]
+    architectures: ["{{ 'amd64' if ansible_facts['architecture'] == 'x86_64' else ansible_facts['architecture'] }}"]
+    signed_by: /etc/apt/keyrings/docker.asc
+    enabled: true
     state: present
+
+# El repositorio pudo registrarse antes en el formato antiguo de una sola
+# linea. Si se deja, apt advierte de origenes duplicados en cada ejecucion.
+- name: Retirar el registro del repositorio en formato antiguo
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/docker.list
+    state: absent
 
 - name: Instalar containerd en la version fijada
   ansible.builtin.apt:
@@ -33,27 +43,71 @@
     update_cache: true
     allow_downgrade: true
 
+# Las tareas que siguen dependen de que los paquetes esten realmente
+# instalados. En modo comprobacion no lo estan, de modo que se omiten: un
+# ensayo en seco sobre una maquina limpia solo puede verificar hasta la
+# instalacion. Sobre una maquina ya configurada, que es donde el ensayo
+# aporta valor, se ejecutan con normalidad en la pasada real.
 - name: Impedir que una actualizacion desatendida cambie la version
   ansible.builtin.dpkg_selections:
     name: containerd.io
     selection: hold
+  when: not ansible_check_mode
 
-- name: Generar la configuracion por defecto si aun no existe
-  ansible.builtin.shell:
-    cmd: containerd config default > /etc/containerd/config.toml
-    creates: /etc/containerd/config.toml
-  notify: Reiniciar containerd
+# El paquete containerd.io instala su propio /etc/containerd/config.toml con
+# el complemento CRI desactivado (disabled_plugins = ["cri"]), que es lo que
+# necesita Docker y justo lo contrario de lo que necesita Kubernetes. Una
+# version anterior de este rol generaba la configuracion solo si el fichero no
+# existia, de modo que en una maquina recien instalada no se generaba nunca y
+# kubeadm fallaba al no encontrar el servicio runtime.v1 (incidencia 14).
+#
+# Se adopta por tanto el criterio contrario: la configuracion no se parchea,
+# se deriva por completo de la que el propio runtime declara como
+# predeterminada, cambiando unicamente el gestor de grupos de control. La
+# salida de `containerd config default` es determinista, de modo que la tarea
+# sigue siendo idempotente: en la segunda pasada el contenido coincide y no se
+# escribe nada.
+- name: Obtener la configuracion predeterminada que declara el runtime
+  ansible.builtin.command:
+    cmd: containerd config default
+  register: containerd_configuracion_defecto
+  changed_when: false
+  when: not ansible_check_mode
 
-- name: Usar el gestor de grupos de control de systemd
-  ansible.builtin.lineinfile:
-    path: /etc/containerd/config.toml
-    regexp: '^(\s*)SystemdCgroup\s*='
-    line: '\1SystemdCgroup = true'
-    backrefs: true
+- name: Escribir la configuracion con el gestor de grupos de control de systemd
+  ansible.builtin.copy:
+    content: "{{ containerd_configuracion_defecto.stdout | regex_replace('SystemdCgroup = false', 'SystemdCgroup = true') }}\n"
+    dest: /etc/containerd/config.toml
+    owner: root
+    group: root
+    mode: "0644"
   notify: Reiniciar containerd
+  when: not ansible_check_mode
 
 - name: Asegurar que containerd esta activo
   ansible.builtin.systemd:
     name: containerd
     enabled: true
     state: started
+  when: not ansible_check_mode
+
+# El reinicio pendiente se ejecuta aqui y no al final del playbook: la
+# comprobacion siguiente carece de sentido sobre un proceso que todavia no ha
+# recargado su configuracion.
+- name: Aplicar los reinicios pendientes antes de verificar
+  ansible.builtin.meta: flush_handlers
+
+# Verificacion explicita del defecto que motivo la incidencia 14. Si el
+# complemento CRI no esta cargado, el rol falla aqui y no veinte minutos
+# despues, en kubeadm.
+- name: Comprobar que el complemento CRI esta cargado y en servicio
+  ansible.builtin.command:
+    cmd: ctr plugins ls
+  register: containerd_complementos
+  changed_when: false
+  failed_when: >-
+    containerd_complementos.stdout_lines
+    | select('search', 'cri')
+    | select('search', 'ok')
+    | list | length == 0
+  when: not ansible_check_mode

@@ -42,3 +42,26 @@ Thumbs.db
 ~$*
 *.tmp
 docs/memoria/*.pdf
+
+# Artefactos empaquetados. Esta es la regla que habria evitado que
+# fase10-roles.tar.gz acabara dentro del inventario.
+*.tar.gz
+*.tgz
+*.zip
+ 
+# Peticiones de firma de certificado: material intermedio de la fase 11.
+# El certificado publico de la CA (.crt) SI se versiona: es lo que hay que
+# repartir a los equipos. La clave privada ya la cubre la regla *.key.
+*.csr
+ 
+# Cache local de Ansible y respaldos de editor
+.ansible/
+*.bak
+*.swo
+ 
+# Registros crudos de sesion generados con script(1). Pueden contener
+# testigos de union al cluster, contrasenas tecleadas por error o volcados
+# de ficheros que no deben salir. Lo que vale de ahi se traslada depurado
+# a docs/cuaderno/.
+sesion-*.log
+cuaderno-crudo/

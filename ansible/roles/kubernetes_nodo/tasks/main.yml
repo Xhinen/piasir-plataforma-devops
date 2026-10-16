@@ -9,8 +9,8 @@
 
 - name: Desactivar la memoria de intercambio en caliente
   ansible.builtin.command: swapoff -a
-  when: ansible_swaptotal_mb | int > 0
-  changed_when: ansible_swaptotal_mb | int > 0
+  when: ansible_facts['swaptotal_mb'] | int > 0
+  changed_when: ansible_facts['swaptotal_mb'] | int > 0
 
 - name: Desactivar la memoria de intercambio de forma permanente
   ansible.builtin.replace:
@@ -61,11 +61,13 @@
     mode: "0644"
 
 - name: Registrar el repositorio de la rama fijada
-  ansible.builtin.apt_repository:
-    repo: >-
-      deb [signed-by=/etc/apt/keyrings/kubernetes.asc]
-      https://pkgs.k8s.io/core:/stable:/{{ version_kubernetes_rama }}/deb/ /
-    filename: kubernetes
+  ansible.builtin.deb822_repository:
+    name: kubernetes
+    types: [deb]
+    uris: "https://pkgs.k8s.io/core:/stable:/{{ version_kubernetes_rama }}/deb/"
+    suites: ["/"]
+    signed_by: /etc/apt/keyrings/kubernetes.asc
+    enabled: true
     state: present
 
 - name: Instalar kubelet, kubeadm y kubectl en la version fijada
@@ -78,6 +80,11 @@
     update_cache: true
     allow_downgrade: true
 
+# Las tareas que siguen dependen de que los paquetes esten realmente
+# instalados. En modo comprobacion no lo estan, de modo que se omiten: un
+# ensayo en seco sobre una maquina limpia solo puede verificar hasta la
+# instalacion. Sobre una maquina ya configurada, que es donde el ensayo
+# aporta valor, se ejecutan con normalidad en la pasada real.
 - name: Impedir que una actualizacion desatendida cambie la version del cluster
   ansible.builtin.dpkg_selections:
     name: "{{ item }}"
@@ -86,8 +93,10 @@
     - kubelet
     - kubeadm
     - kubectl
+  when: not ansible_check_mode
 
 - name: Asegurar que kubelet esta habilitado
   ansible.builtin.systemd:
     name: kubelet
     enabled: true
+  when: not ansible_check_mode

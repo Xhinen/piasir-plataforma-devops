@@ -39,11 +39,17 @@
       bantime  = {{ fail2ban_bantime }}
   notify: Reiniciar fail2ban
 
+# Las tareas que siguen dependen de que los paquetes esten realmente
+# instalados. En modo comprobacion no lo estan, de modo que se omiten: un
+# ensayo en seco sobre una maquina limpia solo puede verificar hasta la
+# instalacion. Sobre una maquina ya configurada, que es donde el ensayo
+# aporta valor, se ejecutan con normalidad en la pasada real.
 - name: Asegurar que el bloqueo esta activo
   ansible.builtin.systemd:
     name: fail2ban
     enabled: true
     state: started
+  when: not ansible_check_mode
 
 # --- Actualizaciones de seguridad ----------------------------------------
 # Se aplican solas, pero NO se reinicia la maquina: un reinicio inesperado de

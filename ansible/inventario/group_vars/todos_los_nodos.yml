@@ -23,16 +23,18 @@ fail2ban_maxretry: 4
 fail2ban_bantime: "1h"
 
 # --- Versiones fijadas ----------------------------------------------------
-# CONFIRMAR: comprueba la cadena exacta en un nodo ya montado con
-#   apt-cache policy containerd.io
-# y pega aqui la version instalada.
-version_containerd_paquete: "2.2.6-1"
+# Version verificada el 12-10-2026 con 'apt-cache policy containerd.io'.
+# La documentacion del proyecto reflejaba 2.2.6; el paquete se encontraba en
+# 2.4.1 por no haberse fijado con 'apt-mark hold'. Se fija la version real en
+# uso y el rol aplica el bloqueo para evitar que vuelva a desplazarse.
+version_containerd_paquete: "2.4.1-2~ubuntu.24.04~noble"
 
-# CONFIRMAR: idem con
-#   apt-cache policy kubelet
-version_kubernetes_paquete: "1.36.2-1.1"
+# Version verificada el 12-10-2026. Los tres paquetes permanecen en 1.36.2
+# pese a existir 1.36.5 en el repositorio, porque estaban retenidos con
+# 'apt-mark hold'. Contrasta con containerd, que no lo estaba y se desplazo.
+version_kubernetes_paquete: "1.36.2-2.1"
 
-# CONFIRMAR: rama del repositorio de Kubernetes (sin el parche)
+# Rama del repositorio de Kubernetes, sin el numero de parche.
 version_kubernetes_rama: "v1.36"
 
 # --- Red del cluster ------------------------------------------------------
