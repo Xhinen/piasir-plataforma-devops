@@ -1,0 +1,15 @@
+USER-SUPPLIED VALUES:
+grafana:
+  adminPassword: artema
+  persistence:
+    enabled: true
+    size: 2Gi
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: 5Gi

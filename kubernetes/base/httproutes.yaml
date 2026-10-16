@@ -1,0 +1,25 @@
+# Reglas de encaminamiento por nombre de servidor
+# Exportado por scripts/exportar-manifiestos.sh el 2026-10-16.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: portfolio-route
+  namespace: portfolio
+spec:
+  hostnames:
+  - portfolio.local
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: mi-gateway
+  rules:
+  - backendRefs:
+    - group: ''
+      kind: Service
+      name: portfolio-service
+      port: 80
+      weight: 1
+    matches:
+    - path:
+        type: PathPrefix
+        value: /

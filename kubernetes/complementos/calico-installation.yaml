@@ -1,0 +1,64 @@
+apiVersion: operator.tigera.io/v1
+kind: Installation
+metadata:
+  creationTimestamp: "2026-06-26T16:22:34Z"
+  finalizers:
+  - operator.tigera.io/installation-controller
+  - tigera.io/operator-cleanup
+  - operator.tigera.io/apiserver-controller
+  generation: 4
+  name: default
+  resourceVersion: "500528"
+  uid: 6985a239-f445-4b18-a23d-3a5098961753
+spec:
+  calicoNetwork:
+    bgp: Enabled
+    hostPorts: Enabled
+    ipPools:
+    - allowedUses:
+      - Workload
+      - Tunnel
+      assignmentMode: Automatic
+      blockSize: 26
+      cidr: 10.244.0.0/16
+      disableBGPExport: false
+      disableNewAllocations: false
+      encapsulation: VXLANCrossSubnet
+      name: default-ipv4-ippool
+      natOutgoing: Enabled
+      nodeSelector: all()
+    linuxDataplane: Iptables
+    linuxPolicySetupTimeoutSeconds: 0
+    multiInterfaceMode: None
+    nodeAddressAutodetectionV4:
+      firstFound: true
+    windowsDataplane: Disabled
+  cni:
+    binDir: /opt/cni/bin
+    confDir: /etc/cni/net.d
+    ipam:
+      type: Calico
+    type: Calico
+  controlPlaneReplicas: 2
+  flexVolumePath: /usr/libexec/kubernetes/kubelet-plugins/volume/exec/
+  kubeletVolumePluginPath: /var/lib/kubelet
+  logging:
+    cni:
+      logFileMaxAgeDays: 30
+      logFileMaxCount: 10
+      logFileMaxSize: 100Mi
+      logSeverity: Info
+  nodeUpdateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+  variant: Calico
+apiVersion: operator.tigera.io/v1
+kind: APIServer
+metadata:
+  creationTimestamp: "2026-06-26T16:22:34Z"
+  generation: 1
+  name: default
+  resourceVersion: "500460"
+  uid: 4143a99a-11ef-49a2-a793-a19646d31839
+spec: {}
