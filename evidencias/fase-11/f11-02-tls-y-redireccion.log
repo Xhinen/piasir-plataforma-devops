@@ -1,0 +1,7 @@
+codigo=200 verificacion_tls=0
+issuer=CN=Ayuntamiento de Sierra Alta - CA interna
+notBefore=Oct 20 07:12:28 2026 GMT
+notAfter=Jan 18 07:12:28 2027 GMT
+X509v3 Subject Alternative Name: critical
+    DNS:*.sierraalta.internal
+codigo=200 verificacion_tls=0

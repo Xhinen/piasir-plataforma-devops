@@ -1,16 +1,40 @@
-# Punto unico de entrada de trafico al cluster
-# Exportado por scripts/exportar-manifiestos.sh el 2026-10-16.
+# Punto unico de entrada de trafico al cluster.
+#
+# La anotacion delega la gestion del certificado en cert-manager: detecta los
+# escuchadores con nombre y modo Terminate, y emite y renueva el certificado
+# solo. Un unico comodin cubre todos los servicios de la zona interna.
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: mi-gateway
   namespace: portfolio
+  annotations:
+    cert-manager.io/cluster-issuer: ca-interna
 spec:
   gatewayClassName: eg
   listeners:
-  - allowedRoutes:
-      namespaces:
-        from: Same
-    name: http
-    port: 80
-    protocol: HTTP
+    # Solo existe para redirigir a HTTPS. No sirve contenido.
+    - name: http
+      port: 80
+      protocol: HTTP
+      hostname: "*.sierraalta.internal"
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              acceso-gateway: permitido
+    - name: https
+      port: 443
+      protocol: HTTPS
+      hostname: "*.sierraalta.internal"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: comodin-sierraalta-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              acceso-gateway: permitido

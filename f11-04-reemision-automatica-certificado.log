@@ -1,0 +1,3 @@
+2026-12-19T09:30:17Z
+certificate.cert-manager.io/comodin-sierraalta-tls   True    comodin-sierraalta-tls   154m
+secret/comodin-sierraalta-tls   kubernetes.io/tls   3      3m32s
