@@ -124,6 +124,12 @@ exportar kubernetes/base/metallb-direcciones.yaml \
 exportar kubernetes/base/metallb-anuncio.yaml \
     "Anuncio de capa 2 de las direcciones del balanceador" \
     l2advertisement -n metallb-system
+exportar kubernetes/base/namespaces-forja.yaml \
+    "Espacio de nombres de la forja de codigo" \
+    namespace forja
+exportar kubernetes/aplicaciones/postgresql-desplegado.yaml \
+    "Base de datos de la forja, tal como esta desplegada" \
+    statefulset,service -n forja -l app=postgresql
 
 echo
 echo "== Aplicaciones ======================================================="

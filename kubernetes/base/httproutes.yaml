@@ -1,4 +1,5 @@
-# Reglas de encaminamiento por nombre de servidor.
+# Reglas de encaminamiento por nombre de servidor
+# Exportado por scripts/exportar-manifiestos.sh el 2026-10-20.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -6,25 +7,24 @@ metadata:
   namespace: portfolio
 spec:
   hostnames:
-    - portfolio.sierraalta.internal
+  - portfolio.sierraalta.internal
   parentRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: mi-gateway
-      sectionName: https
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: mi-gateway
+    sectionName: https
   rules:
-    - backendRefs:
-        - group: ''
-          kind: Service
-          name: portfolio-service
-          port: 80
-          weight: 1
-      matches:
-        - path:
-            type: PathPrefix
-            value: /
+  - backendRefs:
+    - group: ''
+      kind: Service
+      name: portfolio-service
+      port: 80
+      weight: 1
+    matches:
+    - path:
+        type: PathPrefix
+        value: /
 ---
-# Todo lo que entre por el puerto 80 se redirige a HTTPS, sin excepciones.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -32,13 +32,17 @@ metadata:
   namespace: portfolio
 spec:
   parentRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: mi-gateway
-      sectionName: http
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: mi-gateway
+    sectionName: http
   rules:
-    - filters:
-        - type: RequestRedirect
-          requestRedirect:
-            scheme: https
-            statusCode: 301
+  - filters:
+    - requestRedirect:
+        scheme: https
+        statusCode: 301
+      type: RequestRedirect
+    matches:
+    - path:
+        type: PathPrefix
+        value: /

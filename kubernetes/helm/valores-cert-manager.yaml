@@ -1,0 +1,6 @@
+USER-SUPPLIED VALUES:
+config:
+  gatewayAPI:
+    enabled: true
+crds:
+  enabled: true

@@ -1,0 +1,65 @@
+USER-SUPPLIED VALUES:
+gitea:
+  additionalConfigFromEnvs:
+  - name: FORGEJO__database__PASSWD
+    valueFrom:
+      secretKeyRef:
+        key: POSTGRES_PASSWORD
+        name: postgres-credenciales
+  admin:
+    email: admin@sierraalta.internal
+    existingSecret: forgejo-admin
+    passwordMode: initialOnlyNoReset
+  config:
+    database:
+      DB_TYPE: postgres
+      HOST: postgresql.forja.svc.cluster.local:5432
+      NAME: forgejo
+      USER: forgejo
+    packages:
+      ENABLED: true
+    security:
+      INSTALL_LOCK: true
+    server:
+      DOMAIN: forja.sierraalta.internal
+      ROOT_URL: https://forja.sierraalta.internal/
+      SSH_DOMAIN: forja.sierraalta.internal
+    service:
+      DISABLE_REGISTRATION: true
+      REQUIRE_SIGNIN_VIEW: false
+httpRoute:
+  enabled: true
+  hostnames:
+  - forja.sierraalta.internal
+  matches:
+    path:
+      type: PathPrefix
+      value: /
+  parentRefs:
+  - name: mi-gateway
+    namespace: portfolio
+    sectionName: https
+  terminate: true
+image:
+  tag: 15.0.10
+ingress:
+  enabled: false
+persistence:
+  accessModes:
+  - ReadWriteOnce
+  claimName: forgejo-datos
+  create: true
+  enabled: true
+  size: 8Gi
+  storageClass: local-path
+replicaCount: 1
+resources:
+  limits:
+    memory: 2Gi
+  requests:
+    cpu: 200m
+    memory: 512Mi
+service:
+  http:
+    port: 3000
+    type: ClusterIP

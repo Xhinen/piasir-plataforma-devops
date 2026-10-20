@@ -1,3 +1,10 @@
+- app_version: v1.21.2
+  chart: cert-manager-v1.21.2
+  name: cert-manager
+  namespace: cert-manager
+  revision: "1"
+  status: deployed
+  updated: 2026-10-20 08:18:57.423622619 +0200 CEST
 - app_version: v1.5.4
   chart: gateway-helm-v1.5.4
   name: eg
@@ -5,6 +12,13 @@
   revision: "1"
   status: deployed
   updated: 2026-07-20 10:13:37.561855014 +0000 UTC
+- app_version: 15.0.10
+  chart: forgejo-17.3.0
+  name: forgejo
+  namespace: forja
+  revision: "1"
+  status: deployed
+  updated: 2026-10-20 15:41:50.633086954 +0200 CEST
 - app_version: v0.92.0
   chart: kube-prometheus-stack-87.2.1
   name: monitoring

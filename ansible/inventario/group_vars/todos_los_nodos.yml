@@ -42,3 +42,7 @@ cidr_pods: "10.244.0.0/16"
 
 servidor_dns_interno: 192.168.18.51
 dominio_interno: sierraalta.internal
+
+# El certificado publico de la CA interna vive en el repositorio; se referencia
+# desde ahi en lugar de duplicarlo dentro del rol.
+ca_interna_origen: "{{ playbook_dir }}/../../kubernetes/cert-manager/ca-sierra-alta.crt"

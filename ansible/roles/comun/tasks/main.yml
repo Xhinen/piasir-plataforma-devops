@@ -101,3 +101,18 @@
       DNS={{ servidor_dns_interno }}
       Domains={{ dominio_interno }}
   notify: Reiniciar el resolutor de nombres
+
+# --- Confianza en la autoridad de certificacion de la organizacion -------
+# Confiar en la CA propia es configuracion base de todas las maquinas, no un
+# arreglo puntual de la que da problemas. Sin esto, ni el motor de
+# contenedores ni el runtime del cluster pueden descargar imagenes del
+# registro propio, porque su certificado lo firma una autoridad que el
+# sistema no conoce.
+- name: Instalar el certificado raiz de la autoridad propia
+  ansible.builtin.copy:
+    src: "{{ ca_interna_origen }}"
+    dest: /usr/local/share/ca-certificates/sierra-alta.crt
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Actualizar el almacen de certificados

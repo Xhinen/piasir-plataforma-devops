@@ -1,0 +1,25 @@
+$ kubectl -n forja get pods,pvc
+NAME           READY   STATUS    RESTARTS   AGE
+postgresql-0   1/1     Running   0          59m
+NAME                 STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+datos-postgresql-0   Bound    pvc-51a0e35b-3d0e-4c4e-b1cd-8e6a6074db24   5Gi        RWO            local-path     <unset>                 59m
+
+$ psql -U forgejo -c '\l'
+                                                   List of databases
+   Name    |  Owner  | Encoding | Locale Provider |  Collate   |   Ctype    | Locale | ICU Rules |  Access privileges  
+-----------+---------+----------+-----------------+------------+------------+--------+-----------+---------------------
+ forgejo   | forgejo | UTF8     | libc            | en_US.utf8 | en_US.utf8 |        |           | 
+ postgres  | forgejo | UTF8     | libc            | en_US.utf8 | en_US.utf8 |        |           | 
+ template0 | forgejo | UTF8     | libc            | en_US.utf8 | en_US.utf8 |        |           | =c/forgejo         +
+           |         |          |                 |            |            |        |           | forgejo=CTc/forgejo
+ template1 | forgejo | UTF8     | libc            | en_US.utf8 | en_US.utf8 |        |           | =c/forgejo         +
+           |         |          |                 |            |            |        |           | forgejo=CTc/forgejo
+(4 rows)
+
+
+$ psql -U forgejo -c 'SELECT version();'
+                                                       version                                                        
+----------------------------------------------------------------------------------------------------------------------
+ PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+(1 row)
+

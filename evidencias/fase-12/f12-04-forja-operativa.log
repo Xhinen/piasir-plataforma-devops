@@ -1,0 +1,18 @@
+$ kubectl -n forja get pods,svc,pvc
+NAME                       READY   STATUS    RESTARTS   AGE
+forgejo-59978fc84c-hmz5n   1/1     Running   0          76m
+postgresql-0               1/1     Running   0          179m
+NAME           TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+forgejo-http   ClusterIP   10.104.245.219   <none>        3000/TCP   76m
+forgejo-ssh    ClusterIP   10.103.21.171    <none>        22/TCP     76m
+postgresql     ClusterIP   None             <none>        5432/TCP   179m
+NAME                 STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+datos-postgresql-0   Bound    pvc-51a0e35b-3d0e-4c4e-b1cd-8e6a6074db24   5Gi        RWO            local-path     <unset>                 179m
+forgejo-datos        Bound    pvc-7275922b-e9a3-4245-85e7-eb169b40093e   8Gi        RWO            local-path     <unset>                 76m
+
+$ forgejo --version
+forgejo version 15.0.10+gitea-1.22.0 (release name 15.0.10) built with GNU Make 4.4.1, go1.26.9 : bindata, timetzdata, sqlite, sqlite_unlock_notify
+
+$ kubectl -n forja get httproute
+NAME      HOSTNAMES                       AGE
+forgejo   ["forja.sierraalta.internal"]   76m
