@@ -1,0 +1,300 @@
+
+PLAY [Configuracion base y endurecimiento de todos los nodos] ******************
+
+TASK [Gathering Facts] *********************************************************
+martes 20 octubre 2026  08:09:36 +0200 (0:00:00.007)       0:00:00.007 ******** 
+ok: [k8s-master]
+ok: [k8s-worker]
+ok: [docker-01]
+ok: [k8s-worker-02]
+
+TASK [comun : Actualizar el indice de paquetes] ********************************
+martes 20 octubre 2026  08:09:38 +0200 (0:00:01.152)       0:00:01.160 ******** 
+ok: [docker-01]
+ok: [k8s-worker]
+ok: [k8s-master]
+ok: [k8s-worker-02]
+
+TASK [comun : Instalar los paquetes base] **************************************
+martes 20 octubre 2026  08:09:38 +0200 (0:00:00.528)       0:00:01.688 ******** 
+ok: [docker-01]
+ok: [k8s-worker]
+ok: [k8s-master]
+ok: [k8s-worker-02]
+
+TASK [comun : Instalar la biblioteca necesaria para gestionar repositorios] ****
+martes 20 octubre 2026  08:09:39 +0200 (0:00:00.671)       0:00:02.360 ******** 
+ok: [docker-01]
+ok: [k8s-worker]
+ok: [k8s-master]
+ok: [k8s-worker-02]
+
+TASK [comun : Fijar el nombre de la maquina] ***********************************
+martes 20 octubre 2026  08:09:39 +0200 (0:00:00.664)       0:00:03.024 ******** 
+ok: [k8s-worker-02]
+ok: [docker-01]
+ok: [k8s-master]
+ok: [k8s-worker]
+
+TASK [comun : Registrar los nodos de la plataforma en /etc/hosts] **************
+martes 20 octubre 2026  08:09:40 +0200 (0:00:00.513)       0:00:03.538 ******** 
+ok: [k8s-worker-02]
+ok: [k8s-worker]
+ok: [docker-01]
+ok: [k8s-master]
+
+TASK [comun : Fijar la zona horaria] *******************************************
+martes 20 octubre 2026  08:09:40 +0200 (0:00:00.236)       0:00:03.774 ******** 
+ok: [k8s-worker-02]
+ok: [docker-01]
+ok: [k8s-master]
+ok: [k8s-worker]
+
+TASK [comun : Asegurar que el servicio de hora esta activo] ********************
+martes 20 octubre 2026  08:09:41 +0200 (0:00:00.358)       0:00:04.133 ******** 
+ok: [k8s-worker]
+ok: [docker-01]
+ok: [k8s-master]
+ok: [k8s-worker-02]
+
+TASK [comun : Crear el directorio de configuracion del resolutor] **************
+martes 20 octubre 2026  08:09:41 +0200 (0:00:00.386)       0:00:04.520 ******** 
+ok: [docker-01]
+ok: [k8s-worker-02]
+ok: [k8s-master]
+ok: [k8s-worker]
+
+TASK [comun : Dirigir la zona interna al servidor de nombres propio] ***********
+martes 20 octubre 2026  08:09:41 +0200 (0:00:00.239)       0:00:04.759 ******** 
+ok: [docker-01]
+ok: [k8s-worker]
+ok: [k8s-master]
+ok: [k8s-worker-02]
+
+TASK [endurecimiento : Instalar las herramientas de endurecimiento] ************
+martes 20 octubre 2026  08:09:42 +0200 (0:00:00.436)       0:00:05.195 ******** 
+ok: [docker-01]
+ok: [k8s-worker]
+ok: [k8s-worker-02]
+ok: [k8s-master]
+
+TASK [endurecimiento : Configurar el acceso remoto] ****************************
+martes 20 octubre 2026  08:09:42 +0200 (0:00:00.674)       0:00:05.870 ******** 
+ok: [docker-01]
+ok: [k8s-master]
+ok: [k8s-worker-02]
+ok: [k8s-worker]
+
+TASK [endurecimiento : Configurar el bloqueo de intentos fallidos] *************
+martes 20 octubre 2026  08:09:43 +0200 (0:00:00.396)       0:00:06.266 ******** 
+ok: [docker-01]
+ok: [k8s-worker]
+ok: [k8s-master]
+ok: [k8s-worker-02]
+
+TASK [endurecimiento : Asegurar que el bloqueo esta activo] ********************
+martes 20 octubre 2026  08:09:43 +0200 (0:00:00.387)       0:00:06.653 ******** 
+ok: [docker-01]
+ok: [k8s-master]
+ok: [k8s-worker]
+ok: [k8s-worker-02]
+
+TASK [endurecimiento : Aplicar parches de seguridad de forma desatendida, sin reiniciar] ***
+martes 20 octubre 2026  08:09:43 +0200 (0:00:00.299)       0:00:06.953 ******** 
+ok: [docker-01]
+ok: [k8s-master]
+ok: [k8s-worker-02]
+ok: [k8s-worker]
+
+PLAY [Preparacion de los nodos del cluster] ************************************
+
+TASK [Gathering Facts] *********************************************************
+martes 20 octubre 2026  08:09:44 +0200 (0:00:00.402)       0:00:07.355 ******** 
+ok: [k8s-worker-02]
+ok: [k8s-master]
+ok: [k8s-worker]
+
+TASK [containerd : Crear el directorio de claves de repositorio] ***************
+martes 20 octubre 2026  08:09:45 +0200 (0:00:00.692)       0:00:08.048 ******** 
+ok: [k8s-master]
+ok: [k8s-worker]
+ok: [k8s-worker-02]
+
+TASK [containerd : Descargar la clave del repositorio de Docker] ***************
+martes 20 octubre 2026  08:09:45 +0200 (0:00:00.183)       0:00:08.231 ******** 
+ok: [k8s-master]
+ok: [k8s-worker-02]
+ok: [k8s-worker]
+
+TASK [containerd : Registrar el repositorio de Docker] *************************
+martes 20 octubre 2026  08:09:45 +0200 (0:00:00.428)       0:00:08.660 ******** 
+ok: [k8s-worker-02]
+ok: [k8s-worker]
+ok: [k8s-master]
+
+TASK [containerd : Retirar el registro del repositorio en formato antiguo] *****
+martes 20 octubre 2026  08:09:45 +0200 (0:00:00.299)       0:00:08.959 ******** 
+ok: [k8s-worker-02]
+ok: [k8s-master]
+ok: [k8s-worker]
+
+TASK [containerd : Instalar containerd en la version fijada] *******************
+martes 20 octubre 2026  08:09:46 +0200 (0:00:00.183)       0:00:09.142 ******** 
+ok: [k8s-worker]
+ok: [k8s-master]
+ok: [k8s-worker-02]
+
+TASK [containerd : Impedir que una actualizacion desatendida cambie la version] ***
+martes 20 octubre 2026  08:09:47 +0200 (0:00:01.499)       0:00:10.641 ******** 
+ok: [k8s-worker]
+ok: [k8s-master]
+ok: [k8s-worker-02]
+
+TASK [containerd : Obtener la configuracion predeterminada que declara el runtime] ***
+martes 20 octubre 2026  08:09:47 +0200 (0:00:00.227)       0:00:10.869 ******** 
+ok: [k8s-master]
+ok: [k8s-worker]
+ok: [k8s-worker-02]
+
+TASK [containerd : Escribir la configuracion con el gestor de grupos de control de systemd] ***
+martes 20 octubre 2026  08:09:48 +0200 (0:00:00.231)       0:00:11.100 ******** 
+ok: [k8s-worker]
+ok: [k8s-master]
+ok: [k8s-worker-02]
+
+TASK [containerd : Asegurar que containerd esta activo] ************************
+martes 20 octubre 2026  08:09:48 +0200 (0:00:00.383)       0:00:11.484 ******** 
+ok: [k8s-worker]
+ok: [k8s-master]
+ok: [k8s-worker-02]
+
+TASK [containerd : Aplicar los reinicios pendientes antes de verificar] ********
+martes 20 octubre 2026  08:09:48 +0200 (0:00:00.292)       0:00:11.777 ******** 
+
+TASK [containerd : Aplicar los reinicios pendientes antes de verificar] ********
+martes 20 octubre 2026  08:09:48 +0200 (0:00:00.002)       0:00:11.779 ******** 
+
+TASK [containerd : Aplicar los reinicios pendientes antes de verificar] ********
+martes 20 octubre 2026  08:09:48 +0200 (0:00:00.001)       0:00:11.781 ******** 
+
+TASK [containerd : Comprobar que el complemento CRI esta cargado y en servicio] ***
+martes 20 octubre 2026  08:09:48 +0200 (0:00:00.001)       0:00:11.783 ******** 
+ok: [k8s-worker]
+ok: [k8s-worker-02]
+ok: [k8s-master]
+
+TASK [kubernetes_nodo : Desactivar la memoria de intercambio en caliente] ******
+martes 20 octubre 2026  08:09:48 +0200 (0:00:00.207)       0:00:11.990 ******** 
+skipping: [k8s-master]
+skipping: [k8s-worker]
+skipping: [k8s-worker-02]
+
+TASK [kubernetes_nodo : Desactivar la memoria de intercambio de forma permanente] ***
+martes 20 octubre 2026  08:09:48 +0200 (0:00:00.019)       0:00:12.009 ******** 
+ok: [k8s-master]
+ok: [k8s-worker-02]
+ok: [k8s-worker]
+
+TASK [kubernetes_nodo : Declarar los modulos necesarios para que persistan al reinicio] ***
+martes 20 octubre 2026  08:09:49 +0200 (0:00:00.222)       0:00:12.231 ******** 
+ok: [k8s-worker]
+ok: [k8s-master]
+ok: [k8s-worker-02]
+
+TASK [kubernetes_nodo : Cargar los modulos ahora] ******************************
+martes 20 octubre 2026  08:09:49 +0200 (0:00:00.376)       0:00:12.608 ******** 
+ok: [k8s-worker-02] => (item=overlay)
+ok: [k8s-master] => (item=overlay)
+ok: [k8s-worker] => (item=overlay)
+ok: [k8s-worker-02] => (item=br_netfilter)
+ok: [k8s-master] => (item=br_netfilter)
+ok: [k8s-worker] => (item=br_netfilter)
+
+TASK [kubernetes_nodo : Habilitar el reenvio y el filtrado del trafico de los puentes] ***
+martes 20 octubre 2026  08:09:49 +0200 (0:00:00.394)       0:00:13.002 ******** 
+ok: [k8s-worker] => (item={'clave': 'net.bridge.bridge-nf-call-iptables', 'valor': '1'})
+ok: [k8s-worker-02] => (item={'clave': 'net.bridge.bridge-nf-call-iptables', 'valor': '1'})
+ok: [k8s-master] => (item={'clave': 'net.bridge.bridge-nf-call-iptables', 'valor': '1'})
+ok: [k8s-worker] => (item={'clave': 'net.bridge.bridge-nf-call-ip6tables', 'valor': '1'})
+ok: [k8s-worker-02] => (item={'clave': 'net.bridge.bridge-nf-call-ip6tables', 'valor': '1'})
+ok: [k8s-master] => (item={'clave': 'net.bridge.bridge-nf-call-ip6tables', 'valor': '1'})
+ok: [k8s-worker-02] => (item={'clave': 'net.ipv4.ip_forward', 'valor': '1'})
+ok: [k8s-worker] => (item={'clave': 'net.ipv4.ip_forward', 'valor': '1'})
+ok: [k8s-master] => (item={'clave': 'net.ipv4.ip_forward', 'valor': '1'})
+
+TASK [kubernetes_nodo : Descargar la clave del repositorio de Kubernetes] ******
+martes 20 octubre 2026  08:09:50 +0200 (0:00:00.582)       0:00:13.584 ******** 
+ok: [k8s-worker]
+ok: [k8s-master]
+ok: [k8s-worker-02]
+
+TASK [kubernetes_nodo : Registrar el repositorio de la rama fijada] ************
+martes 20 octubre 2026  08:09:51 +0200 (0:00:00.533)       0:00:14.118 ******** 
+ok: [k8s-master]
+ok: [k8s-worker]
+ok: [k8s-worker-02]
+
+TASK [kubernetes_nodo : Retirar el registro del repositorio en formato antiguo] ***
+martes 20 octubre 2026  08:09:51 +0200 (0:00:00.247)       0:00:14.366 ******** 
+ok: [k8s-master]
+ok: [k8s-worker]
+ok: [k8s-worker-02]
+
+TASK [kubernetes_nodo : Instalar kubelet, kubeadm y kubectl en la version fijada] ***
+martes 20 octubre 2026  08:09:51 +0200 (0:00:00.190)       0:00:14.556 ******** 
+ok: [k8s-worker]
+ok: [k8s-master]
+ok: [k8s-worker-02]
+
+TASK [kubernetes_nodo : Impedir que una actualizacion desatendida cambie la version del cluster] ***
+martes 20 octubre 2026  08:09:52 +0200 (0:00:01.419)       0:00:15.976 ******** 
+ok: [k8s-worker] => (item=kubelet)
+ok: [k8s-master] => (item=kubelet)
+ok: [k8s-worker-02] => (item=kubelet)
+ok: [k8s-worker] => (item=kubeadm)
+ok: [k8s-worker-02] => (item=kubeadm)
+ok: [k8s-master] => (item=kubeadm)
+ok: [k8s-worker-02] => (item=kubectl)
+ok: [k8s-master] => (item=kubectl)
+ok: [k8s-worker] => (item=kubectl)
+
+TASK [kubernetes_nodo : Asegurar que kubelet esta habilitado] ******************
+martes 20 octubre 2026  08:09:53 +0200 (0:00:00.544)       0:00:16.520 ******** 
+ok: [k8s-master]
+ok: [k8s-worker]
+ok: [k8s-worker-02]
+
+PLAY RECAP *********************************************************************
+docker-01                  : ok=15   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+k8s-master                 : ok=36   changed=0    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+k8s-worker                 : ok=36   changed=0    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+k8s-worker-02              : ok=36   changed=0    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+
+
+TASKS RECAP ********************************************************************
+martes 20 octubre 2026  08:09:53 +0200 (0:00:00.299)       0:00:16.820 ******** 
+=============================================================================== 
+containerd : Instalar containerd en la version fijada ------------------- 1.50s
+kubernetes_nodo : Instalar kubelet, kubeadm y kubectl en la version fijada --- 1.42s
+Gathering Facts --------------------------------------------------------- 1.15s
+Gathering Facts --------------------------------------------------------- 0.69s
+endurecimiento : Instalar las herramientas de endurecimiento ------------ 0.67s
+comun : Instalar los paquetes base -------------------------------------- 0.67s
+comun : Instalar la biblioteca necesaria para gestionar repositorios ---- 0.66s
+kubernetes_nodo : Habilitar el reenvio y el filtrado del trafico de los puentes --- 0.58s
+kubernetes_nodo : Impedir que una actualizacion desatendida cambie la version del cluster --- 0.54s
+kubernetes_nodo : Descargar la clave del repositorio de Kubernetes ------ 0.53s
+comun : Actualizar el indice de paquetes -------------------------------- 0.53s
+comun : Fijar el nombre de la maquina ----------------------------------- 0.51s
+comun : Dirigir la zona interna al servidor de nombres propio ----------- 0.44s
+containerd : Descargar la clave del repositorio de Docker --------------- 0.43s
+endurecimiento : Aplicar parches de seguridad de forma desatendida, sin reiniciar --- 0.40s
+endurecimiento : Configurar el acceso remoto ---------------------------- 0.40s
+kubernetes_nodo : Cargar los modulos ahora ------------------------------ 0.39s
+endurecimiento : Configurar el bloqueo de intentos fallidos ------------- 0.39s
+comun : Asegurar que el servicio de hora esta activo -------------------- 0.39s
+containerd : Escribir la configuracion con el gestor de grupos de control de systemd --- 0.38s
+
+PLAYBOOK RECAP *****************************************************************
+Playbook run took 0 days, 0 hours, 0 minutes, 16 seconds
+

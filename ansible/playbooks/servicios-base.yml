@@ -1,0 +1,6 @@
+---
+- name: Configurar los servicios base de la plataforma
+  hosts: servicios_base
+  become: true
+  roles:
+    - dns_interno

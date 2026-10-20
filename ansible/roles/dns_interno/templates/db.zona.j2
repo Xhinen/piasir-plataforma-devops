@@ -1,0 +1,16 @@
+$TTL 300
+@   IN  SOA ns1.{{ dns_interno_zona_interna }}. admin.{{ dns_interno_zona_interna }}. (
+        {{ dns_interno_serie_zona }} ; numero de serie
+        3600             ; refresco
+        600              ; reintento
+        604800           ; expiracion
+        300 )            ; TTL de las respuestas negativas
+@   IN  NS  ns1.{{ dns_interno_zona_interna }}.
+
+{% for nombre, ultimo in dns_interno_registros.items() %}
+{{ "%-16s" | format(nombre) }} IN  A   {{ dns_interno_red_interna }}.{{ ultimo }}
+{% endfor %}
+
+; Cualquier nombre no declarado resuelve al balanceador del cluster. Los
+; registros explicitos de arriba tienen preferencia sobre el comodin.
+*                IN  A   {{ dns_interno_red_interna }}.{{ dns_interno_comodin_servicios }}

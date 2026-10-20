@@ -1,0 +1,4 @@
+$ dig @192.168.18.51 k8s-master.sierraalta.internal +short
+192.168.18.54
+$ dig @192.168.18.51 portfolio.sierraalta.internal +short
+192.168.18.240

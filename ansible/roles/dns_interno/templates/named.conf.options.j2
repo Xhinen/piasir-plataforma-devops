@@ -1,0 +1,21 @@
+options {
+    directory "/var/cache/bind";
+
+    // Se atiende unicamente a la red de la organizacion. Un resolutor abierto
+    // a Internet se emplea como amplificador en ataques de denegacion de
+    // servicio: el atacante falsea el origen y la respuesta, mucho mayor que
+    // la pregunta, acaba en la victima.
+    listen-on { 127.0.0.1; {{ dns_interno_direccion_dns }}; };
+    listen-on-v6 { none; };
+    allow-query { localhost; {{ dns_interno_red_interna }}.0/24; };
+    allow-recursion { localhost; {{ dns_interno_red_interna }}.0/24; };
+    allow-transfer { none; };
+
+    forwarders {
+{% for f in dns_interno_reenviadores %}
+        {{ f }};
+{% endfor %}
+    };
+
+    dnssec-validation auto;
+};

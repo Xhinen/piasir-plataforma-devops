@@ -1,0 +1,66 @@
+==========================================================
+ NODO: k8s-master   FECHA: 2026-10-04T18:59:48+00:00
+==========================================================
+--- Sistema operativo y kernel ---
+SO: Ubuntu 24.04.4 LTS
+Kernel: 6.8.0-136-generic
+Uptime: up 1 hour, 9 minutes
+
+--- Recursos ---
+CPU: 2 vCPU
+                 total        used        free      shared  buff/cache   available
+  Mem:           7.7Gi       1.8Gi       4.1Gi       3.8Mi       2.0Gi       5.9Gi
+  Swap:             0B          0B          0B
+  Filesystem     Type  Size  Used Avail Use% Mounted on
+  /dev/vda2      ext4   24G   11G   12G  48% /
+
+--- Runtimes de contenedores ---
+  containerd: v2.2.6
+
+--- Kubernetes ---
+  kubelet: v1.36.2
+  kubeadm: v1.36.2
+  --- Nodos ---
+  NAME         STATUS   ROLES           AGE    VERSION   INTERNAL-IP     EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION              CONTAINER-RUNTIME
+  k8s-master   Ready    control-plane   100d   v1.36.2   192.168.18.54   <none>        Ubuntu 24.04.4 LTS   6.8.0-136-generic (amd64)   containerd://2.2.6
+  k8s-worker   Ready    <none>          100d   v1.36.2   192.168.18.53   <none>        Ubuntu 24.04.4 LTS   6.8.0-136-generic (amd64)   containerd://2.2.6
+  --- Versiones de imagen por nodo ---
+  NOMBRE       KUBELET   RUNTIME              SO
+  k8s-master   v1.36.2   containerd://2.2.6   Ubuntu 24.04.4 LTS
+  k8s-worker   v1.36.2   containerd://2.2.6   Ubuntu 24.04.4 LTS
+  --- Pods que NO estan Running/Completed ---
+  --- Consumo real por nodo ---
+  --- Releases de Helm ---
+  NAME      	NAMESPACE           	REVISION	UPDATED                                	STATUS  	CHART                       	APP VERSION
+  eg        	envoy-gateway-system	1       	2026-07-20 10:13:37.561855014 +0000 UTC	deployed	gateway-helm-v1.5.4         	v1.5.4     
+  monitoring	monitoring          	1       	2026-07-07 09:43:13.329749087 +0000 UTC	deployed	kube-prometheus-stack-87.2.1	v0.92.0    
+  Helm: v3.21.2
+  --- Entrada de trafico ---
+  NAMESPACE   NAME                                           CLASS   ADDRESS          PROGRAMMED   AGE
+  portfolio   gateway.gateway.networking.k8s.io/mi-gateway   eg      192.168.18.240   True         76d
+  
+  NAMESPACE   NAME                                                  HOSTNAMES             AGE
+  portfolio   httproute.gateway.networking.k8s.io/portfolio-route   ["portfolio.local"]   76d
+  NAMESPACE              NAME                                  TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)        AGE
+  envoy-gateway-system   envoy-portfolio-mi-gateway-c5b29929   LoadBalancer   10.110.175.192   192.168.18.240   80:30964/TCP   76d
+  --- Almacenamiento ---
+  NAME                                               PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+  storageclass.storage.k8s.io/local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  86d
+  
+  NAME                                                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                                                                               STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+  persistentvolume/pvc-478e8a06-8704-4740-987d-533db040525d   2Gi        RWO            Delete           Bound    monitoring/monitoring-grafana                                                                                       local-path     <unset>                          86d
+  persistentvolume/pvc-6ebf3676-0376-4754-9d10-78f9abbee013   5Gi        RWO            Delete           Bound    monitoring/prometheus-monitoring-kube-prometheus-prometheus-db-prometheus-monitoring-kube-prometheus-prometheus-0   local-path     <unset>                          86d
+  NAMESPACE    NAME                                                                                                     STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+  monitoring   monitoring-grafana                                                                                       Bound    pvc-478e8a06-8704-4740-987d-533db040525d   2Gi        RWO            local-path     <unset>                 89d
+  monitoring   prometheus-monitoring-kube-prometheus-prometheus-db-prometheus-monitoring-kube-prometheus-prometheus-0   Bound    pvc-6ebf3676-0376-4754-9d10-78f9abbee013   5Gi        RWO            local-path     <unset>                 89d
+
+--- Requisitos de kubeadm ---
+  Swap activa: 0 entradas (debe ser 0)
+  Modulos: 2 de 2
+  net.ipv4.ip_forward = 1
+
+--- Seguridad ---
+  fail2ban ufw unattended-upgrades: active inactive active
+  PermitRootLogin: 
+  PasswordAuthentication: 
+==========================================================

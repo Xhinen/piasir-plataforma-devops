@@ -1,0 +1,5 @@
+---
+- name: Recargar el servidor de nombres
+  ansible.builtin.systemd:
+    name: named
+    state: reloaded

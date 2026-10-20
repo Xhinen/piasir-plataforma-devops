@@ -39,3 +39,6 @@ version_kubernetes_rama: "v1.36"
 
 # --- Red del cluster ------------------------------------------------------
 cidr_pods: "10.244.0.0/16"
+
+servidor_dns_interno: 192.168.18.51
+dominio_interno: sierraalta.internal

@@ -1,0 +1,23 @@
+Licencia de la documentación
+============================
+
+La documentación de este proyecto —la memoria, los planes de fase, las
+bitácoras de sesión, los diagramas y las evidencias contenidos en los
+directorios docs/ y evidencias/— se publica bajo licencia
+
+    Creative Commons Atribución-CompartirIgual 4.0 Internacional
+    (CC BY-SA 4.0)
+
+Texto legal completo:  https://creativecommons.org/licenses/by-sa/4.0/legalcode.es
+Resumen para humanos:  https://creativecommons.org/licenses/by-sa/4.0/deed.es
+
+Usted es libre de compartir y adaptar este material para cualquier
+finalidad, incluso comercial, siempre que reconozca la autoría e indique
+si se han realizado cambios, y siempre que distribuya sus contribuciones
+bajo esta misma licencia.
+
+El código fuente del proyecto —los roles de Ansible, los manifiestos de
+Kubernetes y los guiones de scripts/— se publica por separado bajo la
+GNU General Public License v3.0; véase el fichero LICENSE.
+
+Autor: Alberto Mira  ·  2026

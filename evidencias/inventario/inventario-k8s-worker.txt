@@ -1,0 +1,33 @@
+==========================================================
+ NODO: k8s-worker   FECHA: 2026-10-04T18:59:32+00:00
+==========================================================
+--- Sistema operativo y kernel ---
+SO: Ubuntu 24.04.4 LTS
+Kernel: 6.8.0-136-generic
+Uptime: up 1 hour, 8 minutes
+
+--- Recursos ---
+CPU: 2 vCPU
+                 total        used        free      shared  buff/cache   available
+  Mem:           7.7Gi       1.5Gi       4.5Gi       4.4Mi       2.0Gi       6.2Gi
+  Swap:             0B          0B          0B
+  Filesystem     Type  Size  Used Avail Use% Mounted on
+  /dev/vda2      ext4   24G   13G  9.3G  59% /
+
+--- Runtimes de contenedores ---
+  containerd: v2.2.6
+
+--- Kubernetes ---
+  kubelet: v1.36.2
+  kubeadm: v1.36.2
+
+--- Requisitos de kubeadm ---
+  Swap activa: 0 entradas (debe ser 0)
+  Modulos: 2 de 2
+  net.ipv4.ip_forward = 1
+
+--- Seguridad ---
+  fail2ban ufw unattended-upgrades: active inactive active
+  PermitRootLogin: 
+  PasswordAuthentication: 
+==========================================================

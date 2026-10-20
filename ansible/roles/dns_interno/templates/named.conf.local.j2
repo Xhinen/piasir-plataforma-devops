@@ -1,0 +1,9 @@
+zone "{{ dns_interno_zona_interna }}" {
+    type master;
+    file "/var/lib/bind/db.{{ dns_interno_zona_interna }}";
+};
+
+zone "18.168.192.in-addr.arpa" {
+    type master;
+    file "/var/lib/bind/db.{{ dns_interno_red_interna }}";
+};

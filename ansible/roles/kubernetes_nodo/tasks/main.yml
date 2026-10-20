@@ -70,6 +70,16 @@
     enabled: true
     state: present
 
+# El repositorio pudo registrarse antes en el formato antiguo de una sola
+# linea, con una clave distinta. apt se niega a leer la lista de origenes
+# cuando el mismo repositorio aparece dos veces firmado por claves que no
+# coinciden, de modo que no basta con anadir el nuevo: hay que retirar el
+# anterior.
+- name: Retirar el registro del repositorio en formato antiguo
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/kubernetes.list
+    state: absent
+
 - name: Instalar kubelet, kubeadm y kubectl en la version fijada
   ansible.builtin.apt:
     name:

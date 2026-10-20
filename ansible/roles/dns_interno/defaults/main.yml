@@ -1,0 +1,35 @@
+---
+# Rol dns_interno: servidor de nombres autoritativo de la zona interna.
+
+# Se emplea .internal y no .local: este ultimo esta reservado por el RFC 6762
+# para mDNS, el protocolo de descubrimiento de Avahi y Bonjour, y usarlo para
+# DNS unicast produce resoluciones erraticas segun que maquina pregunte. ICANN
+# reservo .internal en 2024 para redes privadas, con la garantia de que nunca
+# se delegara en la raiz publica.
+dns_interno_zona_interna: sierraalta.internal
+
+dns_interno_red_interna: 192.168.18
+dns_interno_direccion_dns: 192.168.18.51
+
+# El numero de serie NO se genera con la fecha del sistema. Si cambiara en
+# cada ejecucion, la tarea informaria modificacion siempre y la prueba de
+# idempotencia dejaria de significar nada. Se sube a mano al editar la zona.
+dns_interno_serie_zona: 2026101901
+
+dns_interno_reenviadores:
+  - 1.1.1.1
+  - 8.8.8.8
+
+# Registros de infraestructura: nombre -> ultimo octeto.
+dns_interno_registros:
+  ns1: 51
+  pve: 50
+  docker-01: 52
+  k8s-worker: 53
+  k8s-master: 54
+  pbs: 55
+  k8s-worker-02: 58
+
+# Todo nombre no declarado resuelve al balanceador del cluster, de modo que
+# cada servicio nuevo que se publique en el Gateway funciona sin tocar la zona.
+dns_interno_comodin_servicios: 240

@@ -1,2 +1,5 @@
----
-# Sin manejadores propios.
+- name: Reiniciar el resolutor de nombres
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    state: restarted
+  when: not ansible_check_mode

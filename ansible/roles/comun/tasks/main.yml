@@ -78,3 +78,26 @@
     enabled: true
     state: started
   when: not ansible_check_mode
+
+# --- Resolucion de nombres -----------------------------------------------
+- name: Crear el directorio de configuracion del resolutor
+  ansible.builtin.file:
+    path: /etc/systemd/resolved.conf.d
+    state: directory
+    mode: "0755"
+
+# Se declara el dominio interno, no el servidor por defecto: las consultas de
+# sierraalta.internal van al servidor propio y el resto sigue su camino
+# habitual. Asi, si el servidor de nombres cae, los nodos pierden la zona
+# interna pero no la resolucion general, que es una averia mucho menor.
+- name: Dirigir la zona interna al servidor de nombres propio
+  ansible.builtin.copy:
+    dest: /etc/systemd/resolved.conf.d/sierraalta.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [Resolve]
+      DNS={{ servidor_dns_interno }}
+      Domains={{ dominio_interno }}
+  notify: Reiniciar el resolutor de nombres

@@ -1,0 +1,89 @@
+---
+# Servidor de nombres autoritativo de la plataforma.
+#
+# Vive fuera del cluster a proposito: un servicio de nombres alojado en el
+# cluster al que da nombres es una dependencia circular, y si el cluster cae no
+# se puede resolver ni su propio panel para diagnosticarlo.
+
+- name: Instalar el servidor de nombres y sus utilidades
+  ansible.builtin.apt:
+    name:
+      - bind9
+      - bind9-utils
+      - bind9-dnsutils
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+# Las plantillas de zona se validan antes de instalarse: Ansible escribe en un
+# temporal, lo pasa por el verificador y solo lo mueve a su sitio si es valido.
+# Una zona con un error de sintaxis impide arrancar el servicio; asi, un error
+# de edicion falla en la tarea y deja el servidor sirviendo la version buena.
+
+- name: Desplegar las opciones generales del servidor
+  ansible.builtin.template:
+    src: named.conf.options.j2
+    dest: /etc/bind/named.conf.options
+    owner: root
+    group: bind
+    mode: "0644"
+  notify: Recargar el servidor de nombres
+
+- name: Declarar las zonas directa e inversa
+  ansible.builtin.template:
+    src: named.conf.local.j2
+    dest: /etc/bind/named.conf.local
+    owner: root
+    group: bind
+    mode: "0644"
+  notify: Recargar el servidor de nombres
+
+- name: Desplegar la zona directa
+  ansible.builtin.template:
+    src: db.zona.j2
+    dest: "/var/lib/bind/db.{{ dns_interno_zona_interna }}"
+    owner: root
+    group: bind
+    mode: "0644"
+    validate: "named-checkzone {{ dns_interno_zona_interna }} %s"
+  notify: Recargar el servidor de nombres
+
+- name: Desplegar la zona inversa
+  ansible.builtin.template:
+    src: db.inversa.j2
+    dest: "/var/lib/bind/db.{{ dns_interno_red_interna }}"
+    owner: root
+    group: bind
+    mode: "0644"
+    validate: "named-checkzone 18.168.192.in-addr.arpa %s"
+  notify: Recargar el servidor de nombres
+
+# La configuracion completa solo puede comprobarse cuando todas sus piezas
+# estan en su sitio: named.conf.local nombra ficheros de zona que hasta la
+# tarea anterior no existian.
+- name: Comprobar que la configuracion completa es valida
+  ansible.builtin.command:
+    cmd: named-checkconf
+  changed_when: false
+  when: not ansible_check_mode
+
+- name: Asegurar que el servidor de nombres esta activo
+  ansible.builtin.systemd:
+    name: named
+    enabled: true
+    state: started
+  when: not ansible_check_mode
+
+- name: Aplicar las recargas pendientes antes de verificar
+  ansible.builtin.meta: flush_handlers
+
+# Verificacion dentro del propio rol: si la zona no responde, el fallo aparece
+# aqui y no media hora despues, cuando algo deje de resolver sin motivo claro.
+- name: Comprobar que la zona responde
+  ansible.builtin.command:
+    cmd: "dig @127.0.0.1 ns1.{{ dns_interno_zona_interna }} +short"
+  register: dns_interno_comprobacion
+  changed_when: false
+  failed_when: dns_interno_direccion_dns not in dns_interno_comprobacion.stdout
+  when: not ansible_check_mode
+
