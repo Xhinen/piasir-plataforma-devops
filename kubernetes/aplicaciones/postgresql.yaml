@@ -1,119 +1,135 @@
-# Base de datos de la forja de codigo.
-#
-# Se despliega como conjunto con estado y no como despliegue corriente: la
-# diferencia es que el conjunto garantiza identidad estable del pod y vincula
-# cada replica a su propio volumen, que es justo lo que necesita una base de
-# datos. Un despliegue corriente podria arrancar una segunda copia sobre el
-# mismo volumen y corromper el almacen.
----
-# Servicio sin direccion propia (headless). No reparte carga: existe para dar
-# un nombre estable, postgresql.forja.svc, al unico pod del conjunto.
-apiVersion: v1
-kind: Service
-metadata:
-  name: postgresql
-  namespace: forja
-  labels:
-    app: postgresql
-spec:
-  clusterIP: None
-  selector:
-    app: postgresql
-  ports:
-    - name: postgresql
-      port: 5432
-      targetPort: 5432
----
+# Base de datos de la forja: conjunto con estado y servicio sin direccion propia
+# Exportado por scripts/exportar-manifiestos.sh el 2026-10-21.
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: postgresql
-  namespace: forja
   labels:
     app: postgresql
+  name: postgresql
+  namespace: forja
 spec:
-  serviceName: postgresql
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  podManagementPolicy: OrderedReady
   replicas: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app: postgresql
+  serviceName: postgresql
   template:
     metadata:
       labels:
         app: postgresql
     spec:
-      securityContext:
-        # El identificador 999 es el del usuario postgres en la imagen
-        # oficial. Declararlo como grupo del volumen evita el fallo de
-        # permisos al inicializar el almacen de datos.
-        fsGroup: 999
       containers:
-        - name: postgresql
-          # Version fijada, nunca una etiqueta movil: es la leccion de la
-          # incidencia 12 trasladada a las imagenes de contenedor.
-          image: postgres:17.11
-          imagePullPolicy: IfNotPresent
-          ports:
-            - name: postgresql
-              containerPort: 5432
-          env:
-            # El almacen de datos va en un subdirectorio del volumen y no en
-            # su raiz: el punto de montaje contiene un directorio lost+found
-            # que impide la inicializacion.
-            - name: PGDATA
-              value: /var/lib/postgresql/data/pgdata
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-credenciales
-                  key: POSTGRES_USER
-            - name: POSTGRES_DB
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-credenciales
-                  key: POSTGRES_DB
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-credenciales
-                  key: POSTGRES_PASSWORD
-          # La sonda de arranque da margen a la primera inicializacion, que
-          # crea el almacen desde cero y tarda bastante mas que un arranque
-          # normal. Sin ella, Kubernetes mataria el pod por no responder.
-          startupProbe:
-            exec:
-              command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
-            periodSeconds: 5
-            failureThreshold: 36
-          # La sonda de disponibilidad decide si el servicio recibe trafico.
-          # Sin ella, Forgejo intentaria conectarse antes de que la base de
-          # datos acepte conexiones.
-          readinessProbe:
-            exec:
-              command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
-            periodSeconds: 10
-            timeoutSeconds: 5
-          livenessProbe:
-            exec:
-              command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            timeoutSeconds: 5
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              memory: 1Gi
-          volumeMounts:
-            - name: datos
-              mountPath: /var/lib/postgresql/data
-  volumeClaimTemplates:
-    - metadata:
-        name: datos
-      spec:
-        accessModes: ["ReadWriteOnce"]
-        storageClassName: local-path
+      - env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              key: POSTGRES_USER
+              name: postgres-credenciales
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              key: POSTGRES_DB
+              name: postgres-credenciales
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: POSTGRES_PASSWORD
+              name: postgres-credenciales
+        image: postgres:17.11
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - pg_isready -U $POSTGRES_USER -d $POSTGRES_DB
+          failureThreshold: 3
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: postgresql
+        ports:
+        - containerPort: 5432
+          name: postgresql
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - pg_isready -U $POSTGRES_USER -d $POSTGRES_DB
+          failureThreshold: 3
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
         resources:
+          limits:
+            memory: 1Gi
           requests:
-            storage: 5Gi
+            cpu: 100m
+            memory: 256Mi
+        startupProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - pg_isready -U $POSTGRES_USER -d $POSTGRES_DB
+          failureThreshold: 36
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 1
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: datos
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 999
+      terminationGracePeriodSeconds: 30
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+  volumeClaimTemplates:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: datos
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 5Gi
+      storageClassName: local-path
+      volumeMode: Filesystem
+    status:
+      phase: Pending
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: postgresql
+  name: postgresql
+  namespace: forja
+spec:
+  ports:
+  - name: postgresql
+    port: 5432
+    protocol: TCP
+    targetPort: 5432
+  selector:
+    app: postgresql
+  type: ClusterIP

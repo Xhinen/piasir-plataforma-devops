@@ -1,5 +1,5 @@
 # Rango de direcciones que MetalLB asigna a los balanceadores
-# Exportado por scripts/exportar-manifiestos.sh el 2026-10-20.
+# Exportado por scripts/exportar-manifiestos.sh el 2026-10-21.
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:

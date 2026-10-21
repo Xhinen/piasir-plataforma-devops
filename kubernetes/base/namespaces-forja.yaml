@@ -1,5 +1,5 @@
 # Espacio de nombres de la forja de codigo
-# Exportado por scripts/exportar-manifiestos.sh el 2026-10-20.
+# Exportado por scripts/exportar-manifiestos.sh el 2026-10-21.
 apiVersion: v1
 kind: Namespace
 metadata:

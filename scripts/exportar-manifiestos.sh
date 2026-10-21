@@ -130,12 +130,18 @@ exportar kubernetes/base/namespaces-forja.yaml \
 exportar kubernetes/aplicaciones/postgresql-desplegado.yaml \
     "Base de datos de la forja, tal como esta desplegada" \
     statefulset,service -n forja -l app=postgresql
+exportar kubernetes/base/namespaces.yaml \
+    "Espacios de nombres de la plataforma" \
+    namespace portfolio forja
 
 echo
 echo "== Aplicaciones ======================================================="
 exportar kubernetes/aplicaciones/portfolio.yaml \
     "Sitio web municipal: despliegue y servicio" \
     deployment,service -n portfolio
+exportar kubernetes/aplicaciones/postgresql.yaml \
+    "Base de datos de la forja: conjunto con estado y servicio sin direccion propia" \
+    statefulset/postgresql service/postgresql -n forja
 
 echo
 echo "== Componentes instalados con Helm ===================================="

@@ -1,5 +1,5 @@
 # Espacios de nombres de la plataforma
-# Exportado por scripts/exportar-manifiestos.sh el 2026-10-20.
+# Exportado por scripts/exportar-manifiestos.sh el 2026-10-21.
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -7,6 +7,17 @@ metadata:
     acceso-gateway: permitido
     kubernetes.io/metadata.name: portfolio
   name: portfolio
+spec:
+  finalizers:
+  - kubernetes
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    acceso-gateway: permitido
+    kubernetes.io/metadata.name: forja
+  name: forja
 spec:
   finalizers:
   - kubernetes
