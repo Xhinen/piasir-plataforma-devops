@@ -1,5 +1,5 @@
 # Clase de pasarela servida por Envoy Gateway
-# Exportado por scripts/exportar-manifiestos.sh el 2026-10-21.
+# Exportado por scripts/exportar-manifiestos.sh el 2026-10-22.
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
 metadata:

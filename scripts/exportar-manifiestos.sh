@@ -67,7 +67,12 @@ def limpia(obj):
                 meta.pop(campo)
     if obj.get("kind") == "Service":
         spec = obj.get("spec", {})
+        # En un servicio sin direccion propia, clusterIP: None lo puso el
+        # autor y es parte del diseno, no un valor que asigne el cluster.
+        sin_direccion = spec.get("clusterIP") == "None"
         for k in RUIDO_SPEC_SVC:
+            if sin_direccion and k in ("clusterIP", "clusterIPs"):
+                continue
             spec.pop(k, None)
         for puerto in spec.get("ports", []):
             puerto.pop("nodePort", None)
@@ -106,9 +111,6 @@ exportar() {   # exportar <destino> <descripcion> <argumentos de kubectl get...>
 
 echo
 echo "== Objetos propios de la plataforma ==================================="
-exportar kubernetes/base/namespaces.yaml \
-    "Espacios de nombres de la plataforma" \
-    namespace portfolio
 exportar kubernetes/base/gatewayclass.yaml \
     "Clase de pasarela servida por Envoy Gateway" \
     gatewayclass eg
@@ -124,12 +126,6 @@ exportar kubernetes/base/metallb-direcciones.yaml \
 exportar kubernetes/base/metallb-anuncio.yaml \
     "Anuncio de capa 2 de las direcciones del balanceador" \
     l2advertisement -n metallb-system
-exportar kubernetes/base/namespaces-forja.yaml \
-    "Espacio de nombres de la forja de codigo" \
-    namespace forja
-exportar kubernetes/aplicaciones/postgresql-desplegado.yaml \
-    "Base de datos de la forja, tal como esta desplegada" \
-    statefulset,service -n forja -l app=postgresql
 exportar kubernetes/base/namespaces.yaml \
     "Espacios de nombres de la plataforma" \
     namespace portfolio forja

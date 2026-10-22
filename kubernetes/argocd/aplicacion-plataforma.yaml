@@ -1,0 +1,27 @@
+# Aplicacion gobernada por Argo CD: los manifiestos escritos a mano de
+# kubernetes/aplicaciones, leidos de la forja interna.
+#
+# Se crea SIN sincronizacion automatica a proposito. Estos objetos ya existen
+# en el cluster, creados a mano, y antes de dejar que Argo CD los imponga hay
+# que ver en que se diferencian del repositorio.
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aplicaciones-plataforma
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://forja.sierraalta.internal/alberto/piasir-plataforma-devops.git
+    targetRevision: main
+    path: kubernetes/aplicaciones
+
+  destination:
+    server: https://kubernetes.default.svc
+
+  # Sin bloque automated todavia: la sincronizacion es manual.
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=false

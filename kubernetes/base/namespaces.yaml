@@ -1,5 +1,5 @@
 # Espacios de nombres de la plataforma
-# Exportado por scripts/exportar-manifiestos.sh el 2026-10-21.
+# Exportado por scripts/exportar-manifiestos.sh el 2026-10-22.
 apiVersion: v1
 kind: Namespace
 metadata:

@@ -1,0 +1,22 @@
+# Entrada de trafico al panel de Argo CD.
+#
+# En fichero propio y no en kubernetes/base/httproutes.yaml: el exportador
+# regenera ese fichero a partir de las rutas del espacio portfolio, y una
+# ruta de otro espacio se perderia en la siguiente exportacion.
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: argocd-route
+  namespace: argocd
+spec:
+  parentRefs:
+    - name: mi-gateway
+      namespace: portfolio
+      sectionName: https
+  hostnames:
+    - argocd.sierraalta.internal
+  rules:
+    - backendRefs:
+        - name: argocd-server
+          port: 80

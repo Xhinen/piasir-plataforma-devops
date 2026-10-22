@@ -1,5 +1,5 @@
 # Base de datos de la forja: conjunto con estado y servicio sin direccion propia
-# Exportado por scripts/exportar-manifiestos.sh el 2026-10-21.
+# Exportado por scripts/exportar-manifiestos.sh el 2026-10-22.
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -125,6 +125,9 @@ metadata:
   name: postgresql
   namespace: forja
 spec:
+  clusterIP: None
+  clusterIPs:
+  - None
   ports:
   - name: postgresql
     port: 5432
