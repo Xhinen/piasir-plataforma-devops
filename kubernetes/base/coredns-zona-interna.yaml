@@ -1,0 +1,50 @@
+# Resolucion de la zona interna dentro del cluster.
+#
+# CoreDNS reenvia por defecto a los servidores del nodo, elegidos al azar
+# entre los tres que trae su configuracion. Dos de ellos son publicos y
+# desconocen sierraalta.internal: responden NXDOMAIN, que es una respuesta
+# valida, y la consulta termina ahi. El resultado es un fallo intermitente.
+#
+# Este bloque declara que la zona interna se resuelve siempre contra el
+# servidor autoritativo propio. El resto de nombres sigue saliendo por donde
+# salia.
+#
+# OJO: este ConfigMap lo gestiona kubeadm. Una actualizacion del plano de
+# control puede sobrescribirlo y habria que volver a aplicarlo.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    sierraalta.internal:53 {
+        errors
+        cache 30
+        forward . 192.168.18.51
+        reload
+    }
+    .:53 {
+        errors
+        health {
+           lameduck 5s
+        }
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+           pods insecure
+           fallthrough in-addr.arpa ip6.arpa
+           ttl 30
+        }
+        prometheus :9153
+        forward . /etc/resolv.conf {
+           max_concurrent 1000
+        }
+        cache 30 {
+           disable success cluster.local
+           disable denial cluster.local
+        }
+        loop
+        reload
+        loadbalance
+    }
