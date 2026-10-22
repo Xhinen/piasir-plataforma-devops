@@ -1,0 +1,34 @@
+[Unit]
+Description=Ejecutor de Forgejo Actions
+Documentation=https://forgejo.org/docs/latest/admin/actions/
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User={{ forgejo_runner_usuario }}
+Group={{ forgejo_runner_usuario }}
+SupplementaryGroups=docker
+WorkingDirectory={{ forgejo_runner_directorio_datos }}
+
+# El secreto se entrega como credencial de systemd: lo lee root, se expone
+# solo a este proceso y no queda en la linea de ordenes ni en el fichero de
+# configuracion.
+LoadCredential=token.txt:{{ forgejo_runner_directorio_config }}/token
+
+ExecStart={{ forgejo_runner_binario }} daemon --config {{ forgejo_runner_directorio_config }}/config.yaml
+Restart=on-failure
+RestartSec=5
+
+# Endurecimiento razonable. No se puede ir mucho mas lejos: el servicio
+# necesita hablar con el socket de Docker, lo que de por si equivale a
+# privilegios de administrador en esta maquina. De ahi que el ejecutor viva
+# en una maquina dedicada y no en los nodos del cluster.
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

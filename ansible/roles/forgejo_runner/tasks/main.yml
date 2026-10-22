@@ -1,0 +1,129 @@
+---
+# Comprobaciones previas: mejor fallar aqui, con un mensaje que explica que
+# falta, que a mitad del despliegue con un error del binario.
+- name: Exigir el identificador y el secreto del ejecutor
+  ansible.builtin.assert:
+    that:
+      - forgejo_runner_uuid | length > 0
+      - forgejo_runner_token | length > 0
+      - forgejo_runner_sha256 != "RELLENAR"
+    fail_msg: >-
+      Faltan datos. El identificador y el secreto se obtienen al crear el
+      ejecutor en la administracion de Forgejo y se pasan con --extra-vars;
+      la suma de verificacion se fija en defaults/main.yml.
+  no_log: true
+
+- name: Consultar la version de Docker instalada
+  ansible.builtin.command:
+    cmd: docker version --format '{{ "{{" }}.Server.Version{{ "}}" }}'
+  register: forgejo_runner_docker_version
+  changed_when: false
+  check_mode: false
+
+# La version 13 del ejecutor exige Docker 25.0 o superior. Comprobarlo aqui
+# convierte un fallo silencioso en tiempo de ejecucion en un error claro.
+- name: Exigir la version minima de Docker
+  ansible.builtin.assert:
+    that:
+      - forgejo_runner_docker_version.stdout is version(forgejo_runner_docker_minimo ~ '.0', '>=')
+    fail_msg: >-
+      El ejecutor {{ forgejo_runner_version }} necesita Docker
+      {{ forgejo_runner_docker_minimo }}.0 o superior; esta maquina tiene
+      {{ forgejo_runner_docker_version.stdout }}.
+
+- name: Crear el grupo del servicio
+  ansible.builtin.group:
+    name: "{{ forgejo_runner_usuario }}"
+    system: true
+
+# El usuario no tiene shell: es una cuenta de servicio, no una cuenta de
+# acceso. Pertenece al grupo docker porque necesita hablar con el motor de
+# contenedores.
+- name: Crear el usuario del servicio
+  ansible.builtin.user:
+    name: "{{ forgejo_runner_usuario }}"
+    group: "{{ forgejo_runner_usuario }}"
+    groups: docker
+    append: true
+    system: true
+    home: "{{ forgejo_runner_directorio_datos }}"
+    create_home: true
+    shell: /usr/sbin/nologin
+
+- name: Crear el directorio de configuracion
+  ansible.builtin.file:
+    path: "{{ forgejo_runner_directorio_config }}"
+    state: directory
+    owner: root
+    group: "{{ forgejo_runner_usuario }}"
+    mode: "0750"
+
+- name: Instalar el binario del ejecutor
+  ansible.builtin.get_url:
+    url: >-
+      https://code.forgejo.org/forgejo/runner/releases/download/v{{ forgejo_runner_version }}/forgejo-runner-{{ forgejo_runner_version }}-linux-{{ forgejo_runner_arquitectura }}
+    dest: "{{ forgejo_runner_binario }}"
+    checksum: "sha256:{{ forgejo_runner_sha256 }}"
+    owner: root
+    group: root
+    mode: "0755"
+  notify: Reiniciar el ejecutor
+
+# El secreto en un fichero propio, legible solo por root. systemd lo lee y se
+# lo entrega al proceso como credencial, de modo que ni el fichero de
+# configuracion ni la linea de ordenes del servicio lo contienen.
+- name: Depositar el secreto de la conexion
+  ansible.builtin.copy:
+    content: "{{ forgejo_runner_token }}"
+    dest: "{{ forgejo_runner_directorio_config }}/token"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  notify: Reiniciar el ejecutor
+
+- name: Desplegar la configuracion del ejecutor
+  ansible.builtin.template:
+    src: config.yaml.j2
+    dest: "{{ forgejo_runner_directorio_config }}/config.yaml"
+    owner: root
+    group: "{{ forgejo_runner_usuario }}"
+    mode: "0640"
+  notify: Reiniciar el ejecutor
+
+- name: Desplegar la unidad de servicio
+  ansible.builtin.template:
+    src: forgejo-runner.service.j2
+    dest: /etc/systemd/system/forgejo-runner.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Recargar systemd
+    - Reiniciar el ejecutor
+
+- name: Dejar el ejecutor activo y habilitado en el arranque
+  ansible.builtin.systemd_service:
+    name: forgejo-runner
+    enabled: true
+    state: started
+    daemon_reload: true
+  when: not ansible_check_mode
+
+- name: Aplicar los reinicios pendientes antes de verificar
+  ansible.builtin.meta: flush_handlers
+
+# Verificacion dentro del propio rol: si el ejecutor no logra conectarse con
+# la forja, el servicio se queda arrancando en bucle y conviene enterarse
+# aqui y no al lanzar el primer flujo de trabajo.
+- name: Comprobar que el servicio sigue en pie pasados unos segundos
+  ansible.builtin.command:
+    cmd: systemctl is-active forgejo-runner
+  register: forgejo_runner_estado
+  changed_when: false
+  failed_when: forgejo_runner_estado.stdout != "active"
+  retries: 3
+  delay: 5
+  until: forgejo_runner_estado.stdout == "active"
+  when: not ansible_check_mode
+

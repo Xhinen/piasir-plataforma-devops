@@ -1,0 +1,54 @@
+---
+# Rol forgejo_runner: ejecutor de Forgejo Actions.
+#
+# El ejecutor NO va en el cluster. Necesita un motor de contenedores para
+# levantar cada trabajo, y los nodos de Kubernetes llevan containerd sin
+# Docker. Ademas, construir y analizar imagenes en los mismos nodos que
+# sirven la web municipal haria competir la integracion continua con la
+# produccion. Va en docker-01, que ya es la maquina de construccion.
+
+forgejo_runner_version: "13.1.0"
+forgejo_runner_arquitectura: amd64
+
+# Suma de verificacion del binario publicado. Se fija aqui para que la
+# descarga sea reproducible y para que una sustitucion del fichero en origen
+# haga fallar la tarea en lugar de pasar desapercibida.
+forgejo_runner_sha256: "29dae21e93f0eab5cdf3564008d44603c74770b41a4f4f1aceed172c774bc376"
+
+forgejo_runner_binario: /usr/local/bin/forgejo-runner
+forgejo_runner_usuario: forgejo-runner
+forgejo_runner_directorio_datos: /var/lib/forgejo-runner
+forgejo_runner_directorio_config: /etc/forgejo-runner
+
+# La version 13 exige Docker 25.0 o superior.
+forgejo_runner_docker_minimo: 25
+
+# --- Conexion con la forja ------------------------------------------------
+forgejo_runner_instancia: "https://forja.sierraalta.internal/"
+forgejo_runner_nombre_conexion: sierraalta
+
+# El identificador lo da Forgejo al crear el ejecutor en su interfaz.
+forgejo_runner_uuid: ""
+
+# El secreto NO se escribe aqui ni en ningun fichero del repositorio: se pasa
+# en la linea de ordenes con --extra-vars y acaba en un fichero que solo lee
+# root, del que systemd se lo entrega al servicio como credencial.
+forgejo_runner_token: ""
+
+# --- Comportamiento del ejecutor ------------------------------------------
+# Formato de etiqueta: <nombre>:<tipo>://<imagen por defecto>.
+# El nombre es lo que se escribe en runs-on. De momento una sola etiqueta,
+# para trabajos corrientes dentro de contenedor. La etiqueta de anfitrion,
+# para los trabajos que construyen imagenes, se anade en la fase siguiente
+# del plan, cuando haga falta y se pueda probar.
+
+# Trabajos simultaneos. Dos es razonable para esta maquina y evita que un
+# flujo encolado bloquee a otro.
+forgejo_runner_capacidad: 2
+
+forgejo_runner_intervalo_consulta: 10s
+forgejo_runner_tiempo_maximo: 1h
+
+forgejo_runner_etiquetas:
+  - "docker:docker://docker.io/library/node:22-bookworm"
+  - "anfitrion:host"

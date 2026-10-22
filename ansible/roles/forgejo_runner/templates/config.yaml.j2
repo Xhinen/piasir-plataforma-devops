@@ -1,0 +1,41 @@
+---
+# Configuracion del ejecutor de Forgejo Actions.
+# Gestionado por Ansible: los cambios a mano se pierden en la proxima
+# ejecucion del rol forgejo_runner.
+
+log:
+  level: info
+  job_level: info
+
+runner:
+  capacity: {{ forgejo_runner_capacidad }}
+  timeout: {{ forgejo_runner_tiempo_maximo }}
+  shutdown_timeout: 1h
+  # Nunca aceptar certificados sin validar: la autoridad propia esta en el
+  # almacen del sistema desde la fase 12, de modo que no hace falta.
+  insecure: false
+  fetch_interval: {{ forgejo_runner_intervalo_consulta }}
+
+cache:
+  enabled: true
+
+container:
+  network: ""
+  enable_ipv6: false
+  # Un trabajo privilegiado equivale a root en el anfitrion. No.
+  privileged: false
+  force_pull: false
+
+server:
+  connections:
+    {{ forgejo_runner_nombre_conexion }}:
+      url: {{ forgejo_runner_instancia }}
+      uuid: {{ forgejo_runner_uuid }}
+      # El secreto no esta en este fichero: systemd lo entrega como
+      # credencial y el ejecutor lo lee del directorio que le indica.
+      token_url: file:$CREDENTIALS_DIRECTORY/token.txt
+      fetch_interval: {{ forgejo_runner_intervalo_consulta }}
+      labels:
+{% for etiqueta in forgejo_runner_etiquetas %}
+        - "{{ etiqueta }}"
+{% endfor %}

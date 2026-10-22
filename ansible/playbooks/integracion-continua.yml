@@ -1,0 +1,17 @@
+---
+# Ejecutores de integracion continua.
+#
+# Se ejecuta sobre el grupo ejecutores_ci, que hoy contiene unicamente
+# docker-01. Esta separado del resto de playbooks a proposito: la maquina de
+# construccion no es un nodo del cluster y no debe recibir sus roles.
+#
+# Uso:
+#   ansible-playbook -i inventario/produccion.ini \
+#       playbooks/integracion-continua.yml \
+#       --extra-vars "forgejo_runner_uuid=$UUID forgejo_runner_token=$TOKEN"
+
+- name: Configurar los ejecutores de Forgejo Actions
+  hosts: ejecutores_ci
+  become: true
+  roles:
+    - forgejo_runner
