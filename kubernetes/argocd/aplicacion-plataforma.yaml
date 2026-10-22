@@ -21,7 +21,11 @@ spec:
   destination:
     server: https://kubernetes.default.svc
 
-  # Sin bloque automated todavia: la sincronizacion es manual.
   syncPolicy:
+    automated:
+      # Elimina del cluster lo que desaparezca del repositorio.
+      prune: true
+      # Deshace los cambios hechos a mano sobre el cluster.
+      selfHeal: true
     syncOptions:
       - CreateNamespace=false
