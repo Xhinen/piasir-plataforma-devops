@@ -99,7 +99,7 @@
     content: |
       [Resolve]
       DNS={{ servidor_dns_interno }}
-      Domains={{ dominio_interno }}
+      Domains=~{{ dominio_interno }}
   notify: Reiniciar el resolutor de nombres
 
 # --- Confianza en la autoridad de certificacion de la organizacion -------
