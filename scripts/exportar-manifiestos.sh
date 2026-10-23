@@ -119,7 +119,7 @@ exportar kubernetes/base/gateway.yaml \
     gateway mi-gateway -n portfolio
 exportar kubernetes/base/httproutes.yaml \
     "Reglas de encaminamiento por nombre de servidor" \
-    httproute -n portfolio
+    httproute/redirigir-a-https -n portfolio
 exportar kubernetes/base/metallb-direcciones.yaml \
     "Rango de direcciones que MetalLB asigna a los balanceadores" \
     ipaddresspool -n metallb-system
@@ -138,6 +138,9 @@ exportar kubernetes/aplicaciones/portfolio.yaml \
 exportar kubernetes/aplicaciones/postgresql.yaml \
     "Base de datos de la forja: conjunto con estado y servicio sin direccion propia" \
     statefulset/postgresql service/postgresql -n forja
+exportar kubernetes/aplicaciones/portfolio-ruta.yaml \
+    "Encaminamiento del sitio web municipal, con el reparto de trafico" \
+    httproute/portfolio-route -n portfolio
 
 echo
 echo "== Componentes instalados con Helm ===================================="

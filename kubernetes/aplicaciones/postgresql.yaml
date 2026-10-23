@@ -1,8 +1,10 @@
 # Base de datos de la forja: conjunto con estado y servicio sin direccion propia
-# Exportado por scripts/exportar-manifiestos.sh el 2026-10-22.
+# Exportado por scripts/exportar-manifiestos.sh el 2026-10-23.
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
+  annotations:
+    argocd.argoproj.io/tracking-id: aplicaciones-plataforma:apps/StatefulSet:forja/postgresql
   labels:
     app: postgresql
   name: postgresql
@@ -120,6 +122,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    argocd.argoproj.io/tracking-id: aplicaciones-plataforma:/Service:forja/postgresql
   labels:
     app: postgresql
   name: postgresql

@@ -33,3 +33,10 @@
   revision: "1"
   status: deployed
   updated: 2026-07-07 09:43:13.329749087 +0000 UTC
+- app_version: 0.40.0
+  chart: sealed-secrets-2.20.0
+  name: sealed-secrets
+  namespace: sealed-secrets
+  revision: "1"
+  status: deployed
+  updated: 2026-10-23 09:02:46.229056016 +0200 CEST

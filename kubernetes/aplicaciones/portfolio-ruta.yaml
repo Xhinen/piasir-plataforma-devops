@@ -1,0 +1,39 @@
+# Encaminamiento del sitio web municipal.
+#
+# La ruta vive junto a la aplicacion y no en kubernetes/base: el reparto de
+# trafico entre versiones es una propiedad de la aplicacion, y tiene que
+# estar bajo el gobierno de Argo CD para que una reversion en Git lo deshaga.
+#
+# Reparto 90/10: la version 1 atiende la mayor parte del trafico mientras la
+# segunda se observa con una fraccion pequena. Cambiar estos dos numeros y
+# confirmarlo es todo el procedimiento de despliegue progresivo.
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: portfolio-route
+  namespace: portfolio
+spec:
+  hostnames:
+    - portfolio.sierraalta.internal
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: mi-gateway
+      sectionName: https
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ''
+          kind: Service
+          name: portfolio-service
+          port: 80
+          weight: 90
+        - group: ''
+          kind: Service
+          name: portfolio-v2-service
+          port: 80
+          weight: 10

@@ -1,8 +1,10 @@
 # Sitio web municipal: despliegue y servicio
-# Exportado por scripts/exportar-manifiestos.sh el 2026-10-22.
+# Exportado por scripts/exportar-manifiestos.sh el 2026-10-23.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    argocd.argoproj.io/tracking-id: aplicaciones-plataforma:apps/Deployment:portfolio/portfolio
   labels:
     app: portfolio
   name: portfolio
@@ -49,6 +51,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    argocd.argoproj.io/tracking-id: aplicaciones-plataforma:/Service:portfolio/portfolio-service
   labels:
     app: portfolio
   name: portfolio-service
