@@ -141,6 +141,9 @@ exportar kubernetes/aplicaciones/postgresql.yaml \
 exportar kubernetes/aplicaciones/portfolio-ruta.yaml \
     "Encaminamiento del sitio web municipal, con el reparto de trafico" \
     httproute/portfolio-route -n portfolio
+exportar kubernetes/aplicaciones/portfolio-politicas-red.yaml \
+    "Politicas de red del sitio web municipal" \
+    networkpolicy -n portfolio
 
 echo
 echo "== Componentes instalados con Helm ===================================="

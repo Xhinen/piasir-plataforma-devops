@@ -1,0 +1,51 @@
+# Politicas de red del sitio web municipal.
+#
+# Estaban aplicadas en el cluster desde julio y no estaban versionadas: el
+# control de seguridad mas importante de la plataforma vivia unicamente
+# dentro del cluster, sin historial ni revision. Se incorporan al
+# repositorio para que Argo CD las gobierne como el resto.
+---
+# Denegacion por defecto: ningun pod de este espacio acepta trafico entrante
+# salvo que otra politica lo autorice expresamente. Es la base sobre la que
+# se construyen las excepciones.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: portfolio
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+# Unica excepcion: la pasarela de entrada puede alcanzar el puerto 80 de las
+# versiones del sitio web. Nadie mas, ni siquiera otros pods del mismo
+# espacio de nombres.
+#
+# El selector enumera las dos versiones. Durante el despliegue progresivo
+# conviven etiquetas distintas, y una excepcion escrita solo para la version
+# en produccion deja a la nueva sin trafico: la pasarela la intenta alcanzar,
+# la politica lo impide y el usuario recibe un error 503.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-gateway
+  namespace: portfolio
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - portfolio
+          - portfolio-v2
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: envoy-gateway-system
+      ports:
+        - port: 80
+          protocol: TCP
