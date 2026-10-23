@@ -1,0 +1,30 @@
+# Recoleccion de metricas de la pasarela de entrada.
+#
+# Envoy publica sus estadisticas en el puerto 19001, pero nadie las estaba
+# leyendo: no existia ningun monitor para el. Sin esto, el trafico que entra
+# a la plataforma es la unica cosa que no se puede observar en Grafana, que
+# es justamente lo que mas interesa ver.
+#
+# La etiqueta release: monitoring no es decorativa: es la que exige el
+# selector de esta instalacion de Prometheus. Sin ella, el monitor existe y
+# nadie lo lee.
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: envoy-pasarela
+  namespace: envoy-gateway-system
+  labels:
+    release: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+      - envoy-gateway-system
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: envoy
+      gateway.envoyproxy.io/owning-gateway-name: mi-gateway
+  podMetricsEndpoints:
+    - port: metrics
+      path: /stats/prometheus
+      interval: 15s
