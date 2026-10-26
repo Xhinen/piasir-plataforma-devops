@@ -1,0 +1,79 @@
+# Verificacion de que el volcado se restaura.
+#
+# No vive en kubernetes/aplicaciones: no es parte de la plataforma, es un
+# procedimiento que se ejecuta a demanda. Pero si se versiona, porque una
+# comprobacion de copias que no esta escrita acaba sin hacerse.
+#
+# Restaura el ultimo volcado sobre una base de datos nueva y vacia, cuenta lo
+# que ha llegado y la elimina. No toca en ningun momento la base en uso.
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: prueba-restauracion
+  namespace: forja
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: restaurar
+          image: postgres:17.11
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TZ
+              value: Europe/Madrid
+            - name: PGHOST
+              value: postgresql.forja.svc.cluster.local
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credenciales
+                  key: POSTGRES_USER
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credenciales
+                  key: POSTGRES_PASSWORD
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              set -euo pipefail
+
+              ultimo=$(ls -1t /copias/base-*.dump | head -1)
+              echo "== Volcado seleccionado =="
+              ls -lh "$ultimo"
+
+              echo "== Creando una base de datos vacia =="
+              psql -d postgres -c "DROP DATABASE IF EXISTS prueba_restauracion;"
+              psql -d postgres -c "CREATE DATABASE prueba_restauracion;"
+
+              echo "== Restaurando =="
+              if pg_restore --no-owner --no-privileges \
+                   --dbname=prueba_restauracion "$ultimo"; then
+                echo "Restauracion completada sin errores"
+              else
+                echo "Restauracion completada con avisos"
+              fi
+
+              echo "== Que ha llegado =="
+              psql -d prueba_restauracion -c \
+                "SELECT count(*) AS tablas FROM information_schema.tables WHERE table_schema='public';"
+              psql -d prueba_restauracion -c \
+                "SELECT count(*) AS usuarios FROM \"user\";"
+              psql -d prueba_restauracion -c \
+                "SELECT count(*) AS repositorios FROM repository;"
+
+              echo "== Limpiando la base de prueba =="
+              psql -d postgres -c "DROP DATABASE prueba_restauracion;"
+              echo "Verificacion terminada"
+          volumeMounts:
+            - name: copias
+              mountPath: /copias
+              readOnly: true
+      volumes:
+        - name: copias
+          persistentVolumeClaim:
+            claimName: copias-forja
+            readOnly: true

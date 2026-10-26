@@ -73,6 +73,8 @@ spec:
                       key: POSTGRES_PASSWORD
                 - name: RETENCION
                   value: "7"
+                - name: TZ
+                  value: Europe/Madrid
               command: ["/bin/bash", "-c"]
               args:
                 - |
