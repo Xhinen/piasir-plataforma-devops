@@ -1,0 +1,113 @@
+# Copia de los datos de la forja de codigo.
+#
+# Cubre las dos mitades del estado del servicio:
+#   - la base de datos (usuarios, permisos, metadatos, paquetes)
+#   - el volumen de datos (los repositorios y el registro de imagenes)
+#
+# Una copia que solo cubriera la base restauraria una forja que recuerda que
+# repositorios existian y no tiene ninguno. El alcance excede lo que pide
+# R08F02T01 porque lo exige la prueba de recuperacion R08F03T01.
+#
+# Los volcados viven en un volumen propio, separado del de datos: si
+# compartieran volumen, un fallo del almacenamiento se llevaria el original y
+# su copia a la vez.
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: copias-forja
+  namespace: forja
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: copia-forja
+  namespace: forja
+spec:
+  # De madrugada, antes de la copia de maquinas completas, para que el
+  # volcado del dia entre en ella.
+  schedule: "15 3 * * *"
+  timeZone: "Europe/Madrid"
+  # Nunca dos copias a la vez.
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 3600
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: copia
+              # Misma version que el servidor de base de datos: una
+              # herramienta de volcado mas antigua puede producir un fichero
+              # que despues no se restaura.
+              image: postgres:17.11
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: PGHOST
+                  value: postgresql.forja.svc.cluster.local
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-credenciales
+                      key: POSTGRES_USER
+                - name: PGDATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-credenciales
+                      key: POSTGRES_DB
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-credenciales
+                      key: POSTGRES_PASSWORD
+                - name: RETENCION
+                  value: "7"
+              command: ["/bin/bash", "-c"]
+              args:
+                - |
+                  # Sin esto, una orden que falle no detiene el guion y la
+                  # tarea termina "con exito" dejando un fichero vacio.
+                  set -euo pipefail
+
+                  marca=$(date +%Y%m%d-%H%M)
+                  destino=/copias
+
+                  echo "== Volcado de la base de datos =="
+                  pg_dump --format=custom --file="$destino/base-$marca.dump.parcial"
+                  mv "$destino/base-$marca.dump.parcial" "$destino/base-$marca.dump"
+
+                  echo "== Empaquetado del volumen de datos =="
+                  tar czf "$destino/datos-$marca.tar.gz.parcial" -C /datos-forja .
+                  mv "$destino/datos-$marca.tar.gz.parcial" "$destino/datos-$marca.tar.gz"
+
+                  echo "== Retencion: se conservan los $RETENCION ultimos =="
+                  ls -1t "$destino"/base-*.dump     | tail -n +$((RETENCION + 1)) | xargs -r rm -f
+                  ls -1t "$destino"/datos-*.tar.gz  | tail -n +$((RETENCION + 1)) | xargs -r rm -f
+
+                  echo "== Contenido del almacen de copias =="
+                  ls -lh "$destino"
+              volumeMounts:
+                - name: copias
+                  mountPath: /copias
+                - name: datos-forja
+                  mountPath: /datos-forja
+                  readOnly: true
+          volumes:
+            - name: copias
+              persistentVolumeClaim:
+                claimName: copias-forja
+            - name: datos-forja
+              persistentVolumeClaim:
+                claimName: forgejo-datos
+                readOnly: true

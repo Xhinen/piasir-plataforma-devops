@@ -65,3 +65,6 @@ docs/memoria/*.pdf
 # a docs/cuaderno/.
 sesion-*.log
 cuaderno-crudo/
+
+# Ignorar archivo de clave maestra
+clave-maestra-*.yaml
