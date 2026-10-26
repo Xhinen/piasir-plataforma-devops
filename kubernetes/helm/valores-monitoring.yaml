@@ -13,3 +13,60 @@ prometheus:
           resources:
             requests:
               storage: 5Gi
+
+# Canal de avisos por correo electronico.
+#
+# La contrasena NO esta aqui: el gestor la lee de un fichero montado desde un
+# secreto sellado. Este fichero se publica en el repositorio; la credencial,
+# nunca.
+alertmanager:
+  alertmanagerSpec:
+    # Monta el secreto en /etc/alertmanager/secrets/alertmanager-smtp/
+    secrets:
+      - alertmanager-smtp
+
+  config:
+    global:
+      resolve_timeout: 5m
+      smtp_smarthost: smtp.gmail.com:587
+      smtp_from: xhinen@gmail.com
+      smtp_auth_username: xhinen@gmail.com
+      smtp_auth_password_file: /etc/alertmanager/secrets/alertmanager-smtp/password
+      smtp_require_tls: true
+
+    route:
+      group_by: ['alertname', 'namespace']
+      group_wait: 30s
+      group_interval: 5m
+      # Un aviso repetido cada 12 h mientras el problema siga vivo. Mas
+      # frecuente y se ignora; menos y se olvida.
+      repeat_interval: 12h
+      receiver: correo
+      routes:
+        # Watchdog es una alerta que se dispara siempre, por diseno: sirve
+        # para comprobar que la cadena de avisos funciona, enviandola a un
+        # servicio externo que avisa cuando deja de llegar. Aqui no hay tal
+        # servicio, asi que se descarta; si no, recibirias un correo cada
+        # doce horas para siempre.
+        - receiver: nulo
+          matchers:
+            - alertname = "Watchdog"
+        - receiver: nulo
+          matchers:
+            - alertname = "InfoInhibitor"
+
+    receivers:
+      - name: nulo
+      - name: correo
+        email_configs:
+          - to: xhinen@gmail.com
+            send_resolved: true
+
+    # Si algo esta critico, no hace falta recibir ademas el aviso leve del
+    # mismo problema.
+    inhibit_rules:
+      - source_matchers:
+          - severity = "critical"
+        target_matchers:
+          - severity = "warning"
+        equal: ['alertname', 'namespace']

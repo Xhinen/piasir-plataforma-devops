@@ -1,0 +1,52 @@
+# Vigilancia de las copias de datos.
+#
+# Primera regla de alerta propia del proyecto: el resto son las que trae el
+# grafico de observabilidad, que no puede conocer las tareas de copia de esta
+# instalacion.
+#
+# Son dos reglas y no una. La primera vigila que la copia se haga; la segunda,
+# que la tarea de copia siga existiendo. Hacen falta las dos: una regla escrita
+# solo sobre el valor no se dispara nunca si alguien borra la tarea, porque no
+# queda dato que comparar. Una alerta que se desactiva al eliminar aquello que
+# vigila no vigila nada.
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: copias-de-seguridad
+  namespace: monitoring
+  labels:
+    # Etiqueta exigida por el selector de esta instalacion de Prometheus.
+    release: monitoring
+spec:
+  groups:
+    - name: copias.rules
+      rules:
+        - alert: CopiaDeLaForjaAusente
+          # Veintiseis horas: el ciclo diario mas dos horas de margen, para no
+          # avisar por un retraso en la ejecucion.
+          expr: >-
+            time() - max(kube_cronjob_status_last_successful_time{namespace="forja", cronjob="copia-forja"})
+            > 26 * 3600
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: Sin copia correcta de la forja en mas de 26 horas
+            description: >-
+              La ultima ejecucion correcta de la copia de la forja es
+              demasiado antigua. Los datos de la forja no estan protegidos
+              desde entonces.
+
+        - alert: TareaDeCopiaDesaparecida
+          expr: >-
+            absent(kube_cronjob_status_last_successful_time{namespace="forja", cronjob="copia-forja"})
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: La tarea programada de copia de la forja no existe
+            description: >-
+              No hay metrica de ultima ejecucion correcta para la copia de la
+              forja: la tarea ha sido eliminada, suspendida desde su creacion
+              o nunca ha llegado a completarse.

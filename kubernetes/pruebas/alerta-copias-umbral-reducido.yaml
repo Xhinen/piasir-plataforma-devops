@@ -1,0 +1,28 @@
+# Verificacion del mecanismo de alerta de copias.
+#
+# Misma condicion que la regla de produccion con un umbral de cinco minutos
+# en lugar de veintiseis horas. Se aplica, se comprueba que el aviso llega, y
+# se retira. Lo que acredita es el mecanismo completo -condicion, disparo,
+# encaminamiento y entrega-, no el umbral, que es el mismo codigo con otro
+# numero.
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: prueba-alerta-copias
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: prueba-copias.rules
+      rules:
+        - alert: PruebaCopiaDeLaForjaAusente
+          expr: >-
+            time() - max(kube_cronjob_status_last_successful_time{namespace="forja", cronjob="copia-forja"})
+            > 300
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PRUEBA: sin copia correcta de la forja en mas de 5 minutos"

@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: alertmanager-smtp
+  namespace: monitoring
+spec:
+  encryptedData:
+    password: AgB/h+IQFEDqRi3QgkkzfaAMx99EjOJnxUtnHQUI3Sm4NUBy8Q8f2ba2zXfu05Ue7hb9UpkVjE8KriiPkq/s3m7Ttv6IRzcX+j8Uh1hyyDRniK+P72kLo67aeDxtuZXpZMzmyR9cTAs/Pt83J4y7jORZVK0uqqd0LV2DSP4dlpLS04n7koLsTfJA99ezH+kfyL0vbWaP9bNoZ4LnmKS9ym+dBK4alGPIgYWo31PrCRUwa4h9TZa9uCUOj6sjSdEHeYCFZPWNfFY8fOVCYCiGSd/nofaEEx8BdZB6Epw5idp83NF53p6Yng6WKh7batj+zhZCci2fXrsgb2dwWeWpDLKPyCUCfcy8X5pCJ29znU0Ws2A1BkGs7sDRN6KGLvFWYD2vTM64JLZvGEvbh6T7qLV5oAPiEcx0xjn3uuFkLZzbtnHMXkwQkfuSRZyVSd44LTKKeZOyrzj4UhktX72oWjerrlMJ/WbAk0h9QtHpYyIYO1BCLJlM3B76og6inM5CN/ClA+jxSHN5DZiiQjIIiUksU+dR9MzgN5cGGxsdN849+gMYFvbn/MgV9M6i+pmMmBhjBR9NRZPMZY5nzd+Jj924tzkxCQt5e6PX1xLrkfqUxyOiRX8E0JUR7AegvY+5YvtXZNMOJ9fMVq3I33zKUlmAeyRxL1Ocpviksx7l1WtGLwirzD+91tRUXLpdv2Gx6mnXsJzy+b0IoKBZJ4USg1Jw
+  template:
+    metadata:
+      name: alertmanager-smtp
+      namespace: monitoring
