@@ -1,0 +1,43 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: restauracion-dr
+  namespace: forja
+spec:
+  containers:
+    - name: shell
+      image: postgres:17.11
+      command: ["sleep", "7200"]
+      env:
+        - name: TZ
+          value: Europe/Madrid
+        - name: PGHOST
+          value: postgresql.forja.svc.cluster.local
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credenciales
+              key: POSTGRES_USER
+        - name: PGDATABASE
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credenciales
+              key: POSTGRES_DB
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credenciales
+              key: POSTGRES_PASSWORD
+      volumeMounts:
+        - name: copias
+          mountPath: /copias
+        - name: datos-forja
+          mountPath: /datos-forja
+  volumes:
+    - name: copias
+      persistentVolumeClaim:
+        claimName: copias-forja
+    - name: datos-forja
+      persistentVolumeClaim:
+        claimName: forgejo-datos

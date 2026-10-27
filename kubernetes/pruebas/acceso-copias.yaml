@@ -1,0 +1,26 @@
+# Pod auxiliar para extraer copias del volumen.
+#
+# El volumen de copias solo es accesible desde dentro del cluster. Este pod
+# lo monta en solo lectura para poder recuperar ficheros desde fuera, que es
+# lo que hace falta antes de un ejercicio de recuperacion y lo que haria
+# falta en uno real.
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: acceso-copias
+  namespace: forja
+spec:
+  containers:
+    - name: shell
+      image: busybox:1.37
+      command: ["sleep", "3600"]
+      volumeMounts:
+        - name: copias
+          mountPath: /copias
+          readOnly: true
+  volumes:
+    - name: copias
+      persistentVolumeClaim:
+        claimName: copias-forja
+        readOnly: true
