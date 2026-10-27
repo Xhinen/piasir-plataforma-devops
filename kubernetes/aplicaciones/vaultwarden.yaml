@@ -48,7 +48,7 @@ spec:
             - name: DOMAIN
               value: https://vault.sierraalta.internal
             - name: SIGNUPS_ALLOWED
-              value: "true"
+              value: "false"
             - name: ROCKET_ADDRESS
               value: 0.0.0.0
             - name: ROCKET_PORT
