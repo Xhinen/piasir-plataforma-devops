@@ -29,3 +29,25 @@ Grafico Helm y sus valores ..... repositorio (valores versionados)
 CONTENIDO de la forja .......... copia de seguridad
 
 De seis piezas, cinco salieron del repositorio y una de la copia.
+
+SEGUNDO EJERCICIO - procedimiento guionizado
+--------------------------------------------
+Copia utilizada      27/10 09:54
+27/10 10:46:18  Destruccion          kubectl delete namespace forja
+27/10 10:47:38  Servicio restaurado  usuarios 1 | repositorios 4 | paquetes 1
+
+Tiempo de recuperacion (RTO) medido .... 1 min 20 s
+Perdida de datos (RPO) medida .......... 52 min 18 s
+
+Perdida demostrada: el commit 2c39ed6 (enviado a la forja a las 10:11) no
+estaba en la copia de las 09:54. La forja restaurada apuntaba a e408a06.
+Se recupero con git push desde el clon local de la estacion de trabajo.
+
+Comparacion entre ambos ejercicios:
+  improvisado .... 40 min 18 s
+  guionizado .....  1 min 20 s
+
+Acotaciones de la cifra: las imagenes estaban en cache de los nodos; se
+perdio el espacio de nombres, no el cluster; el volumen de datos es de
+106 MB; y las copias se habian extraido del cluster ANTES de empezar, lo
+que en una perdida real del cluster no habria sido posible.
