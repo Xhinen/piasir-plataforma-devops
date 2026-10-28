@@ -16,6 +16,11 @@ spec:
       labels:
         app: valkey
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 1000
+        fsGroup: 1000
       containers:
         - name: valkey
           image: valkey/valkey:9.0.7-alpine
