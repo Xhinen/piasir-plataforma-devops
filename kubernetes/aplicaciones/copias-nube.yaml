@@ -59,6 +59,9 @@ spec:
                   set -euo pipefail
                   FECHA=$(date +%Y%m%d-%H%M)
 
+                  echo "== Limpieza de copias incompletas anteriores =="
+                  rm -f /copias/*.parcial
+
                   echo "== Volcado de la base de datos =="
                   pg_dump --format=custom --no-owner --no-privileges \
                     --file="/copias/base-${FECHA}.dump.parcial"
