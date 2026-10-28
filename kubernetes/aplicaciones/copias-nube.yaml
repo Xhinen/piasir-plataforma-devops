@@ -69,7 +69,7 @@ spec:
 
                   echo "== Verificacion de la copia =="
                   pg_restore --list "/copias/base-${FECHA}.dump" > /dev/null
-                  echo "volcado legible, $(pg_restore --list "/copias/base-${FECHA}.dump" | grep -c '^[0-9]') objetos"
+                  echo "volcado legible"
 
                   echo "== Empaquetado de los datos de usuario =="
                   tar czf "/copias/datos-${FECHA}.tar.gz.parcial" -C /datos-nube .

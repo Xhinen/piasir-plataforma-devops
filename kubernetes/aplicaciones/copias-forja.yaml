@@ -81,18 +81,20 @@ spec:
                   # Sin esto, una orden que falle no detiene el guion y la
                   # tarea termina "con exito" dejando un fichero vacio.
                   set -euo pipefail
-                  FECHA=$(date +%Y%m%d-%H%M)
+
+                  destino=/copias
+                  marca=$(date +%Y%m%d-%H%M)
 
                   echo "== Limpieza de copias incompletas anteriores =="
-                  rm -f /copias/*.parcial
+                  rm -f "$destino"/*.parcial
 
                   echo "== Volcado de la base de datos =="
                   pg_dump --format=custom --file="$destino/base-$marca.dump.parcial"
                   mv "$destino/base-$marca.dump.parcial" "$destino/base-$marca.dump"
 
                   echo "== Verificacion de la copia =="
-                  pg_restore --list "/copias/base-${FECHA}.dump" > /dev/null
-                  echo "volcado legible, $(pg_restore --list "/copias/base-${FECHA}.dump" | grep -c '^[0-9]') objetos"
+                  pg_restore --list "$destino/base-$marca.dump" > /dev/null
+                  echo "volcado legible"
 
                   echo "== Empaquetado del volumen de datos =="
                   tar czf "$destino/datos-$marca.tar.gz.parcial" -C /datos-forja .
