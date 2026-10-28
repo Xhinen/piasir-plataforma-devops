@@ -90,6 +90,10 @@ spec:
                   pg_dump --format=custom --file="$destino/base-$marca.dump.parcial"
                   mv "$destino/base-$marca.dump.parcial" "$destino/base-$marca.dump"
 
+                  echo "== Verificacion de la copia =="
+                  pg_restore --list "/copias/base-${FECHA}.dump" > /dev/null
+                  echo "volcado legible, $(pg_restore --list "/copias/base-${FECHA}.dump" | grep -c '^[0-9]') objetos"
+
                   echo "== Empaquetado del volumen de datos =="
                   tar czf "$destino/datos-$marca.tar.gz.parcial" -C /datos-forja .
                   mv "$destino/datos-$marca.tar.gz.parcial" "$destino/datos-$marca.tar.gz"

@@ -53,6 +53,10 @@ spec:
                     "VACUUM INTO '/copias/base-${FECHA}.sqlite3.parcial'"
                   mv "/copias/base-${FECHA}.sqlite3.parcial" "/copias/base-${FECHA}.sqlite3"
 
+                  echo "== Verificacion de la copia =="
+                  sqlite3 "/copias/base-${FECHA}.sqlite3" "PRAGMA integrity_check" | grep -q '^ok$'
+                  echo "integridad correcta"
+
                   echo "== Empaquetado de adjuntos y material criptografico =="
                   tar czf "/copias/datos-${FECHA}.tar.gz.parcial" \
                     -C /datos --exclude='db.sqlite3*' --exclude='icon_cache' .
