@@ -81,9 +81,10 @@ spec:
                   # Sin esto, una orden que falle no detiene el guion y la
                   # tarea termina "con exito" dejando un fichero vacio.
                   set -euo pipefail
+                  FECHA=$(date +%Y%m%d-%H%M)
 
-                  marca=$(date +%Y%m%d-%H%M)
-                  destino=/copias
+                  echo "== Limpieza de copias incompletas anteriores =="
+                  rm -f /copias/*.parcial
 
                   echo "== Volcado de la base de datos =="
                   pg_dump --format=custom --file="$destino/base-$marca.dump.parcial"
