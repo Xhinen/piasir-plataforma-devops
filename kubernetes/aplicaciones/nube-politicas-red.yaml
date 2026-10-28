@@ -46,6 +46,9 @@ spec:
         - podSelector:
             matchLabels:
               app.kubernetes.io/name: nextcloud
+        - podSelector:
+            matchLabels:
+              acceso-base-de-datos: "si"
       ports:
         - port: 5432
           protocol: TCP
