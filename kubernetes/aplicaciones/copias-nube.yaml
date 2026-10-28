@@ -95,6 +95,7 @@ spec:
                   mountPath: /copias
                 - name: datos-nube
                   mountPath: /datos-nube
+                  subPath: data
                   readOnly: true
           volumes:
             - name: copias
