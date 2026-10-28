@@ -1,73 +1,104 @@
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Namespace
 metadata:
-  name: valkey
+  name: nube
+  labels:
+    acceso-gateway: permitido
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql
   namespace: nube
   labels:
-    app: valkey
+    app: postgresql
 spec:
   replicas: 1
+  serviceName: postgresql
   selector:
     matchLabels:
-      app: valkey
+      app: postgresql
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
   template:
     metadata:
       labels:
-        app: valkey
+        app: postgresql
     spec:
+      securityContext:
+        fsGroup: 999
       containers:
-        - name: valkey
-          image: valkey/valkey:9.0.7-alpine
+        - name: postgresql
+          image: postgres:17.11
           imagePullPolicy: IfNotPresent
-          args:
-            - "--save"
-            - ""
-            - "--appendonly"
-            - "no"
-            - "--maxmemory"
-            - "256mb"
-            - "--maxmemory-policy"
-            - "allkeys-lru"
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credenciales
+                  key: POSTGRES_USER
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credenciales
+                  key: POSTGRES_DB
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credenciales
+                  key: POSTGRES_PASSWORD
           ports:
-            - name: valkey
-              containerPort: 6379
+            - name: postgresql
+              containerPort: 5432
+          startupProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+            periodSeconds: 5
+            failureThreshold: 36
           readinessProbe:
             exec:
-              command: ["valkey-cli", "ping"]
+              command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
             periodSeconds: 10
           livenessProbe:
             exec:
-              command: ["valkey-cli", "ping"]
-            initialDelaySeconds: 30
+              command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+            initialDelaySeconds: 60
             periodSeconds: 30
           resources:
             requests:
-              cpu: 50m
-              memory: 64Mi
+              cpu: 100m
+              memory: 256Mi
             limits:
-              memory: 320Mi
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            capabilities:
-              drop: ["ALL"]
+              memory: 1Gi
           volumeMounts:
             - name: datos
-              mountPath: /data
-      volumes:
-        - name: datos
-          emptyDir: {}
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: datos
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 5Gi
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: valkey
+  name: postgresql
   namespace: nube
+  labels:
+    app: postgresql
 spec:
+  clusterIP: None
   selector:
-    app: valkey
+    app: postgresql
   ports:
-    - name: valkey
-      port: 6379
-      targetPort: 6379
+    - name: postgresql
+      port: 5432
+      targetPort: 5432
