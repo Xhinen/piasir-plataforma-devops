@@ -2,22 +2,22 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: copias-nube
-  namespace: nube
+  name: copias-vault
+  namespace: vault
 spec:
   accessModes: ["ReadWriteOnce"]
   storageClassName: local-path
   resources:
     requests:
-      storage: 5Gi
+      storage: 2Gi
 ---
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: copia-nube
-  namespace: nube
+  name: copia-vault
+  namespace: vault
 spec:
-  schedule: "30 3 * * *"
+  schedule: "45 3 * * *"
   timeZone: Europe/Madrid
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
@@ -26,90 +26,59 @@ spec:
     spec:
       backoffLimit: 2
       template:
-        metadata:
-          labels:
-            acceso-base-de-datos: "si"
         spec:
           restartPolicy: OnFailure
           containers:
             - name: copia
-              image: postgres:17.11
+              image: alpine:3.24.3
               imagePullPolicy: IfNotPresent
               env:
                 - name: TZ
                   value: Europe/Madrid
-                - name: PGHOST
-                  value: postgresql.nube.svc.cluster.local
-                - name: PGUSER
-                  valueFrom:
-                    secretKeyRef:
-                      name: postgres-credenciales
-                      key: POSTGRES_USER
-                - name: PGDATABASE
-                  valueFrom:
-                    secretKeyRef:
-                      name: postgres-credenciales
-                      key: POSTGRES_DB
-                - name: PGPASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      name: postgres-credenciales
-                      key: POSTGRES_PASSWORD
               command:
-                - bash
+                - sh
                 - -c
                 - |
-                  set -euo pipefail
+                  set -eu
                   FECHA=$(date +%Y%m%d-%H%M)
 
                   echo "== Limpieza de copias incompletas anteriores =="
                   rm -f /copias/*.parcial
 
-                  echo "== Volcado de la base de datos =="
-                  pg_dump --format=custom --no-owner --no-privileges \
-                    --file="/copias/base-${FECHA}.dump.parcial"
-                  mv "/copias/base-${FECHA}.dump.parcial" "/copias/base-${FECHA}.dump"
+                  echo "== Preparando la herramienta =="
+                  apk add --no-cache sqlite > /dev/null
 
-                  echo "== Empaquetado de los datos de usuario =="
-                  set +e
+                  echo "== Copia consistente de la base de datos =="
+                  sqlite3 /datos/db.sqlite3 \
+                    "VACUUM INTO '/copias/base-${FECHA}.sqlite3.parcial'"
+                  mv "/copias/base-${FECHA}.sqlite3.parcial" "/copias/base-${FECHA}.sqlite3"
+
+                  echo "== Empaquetado de adjuntos y material criptografico =="
                   tar czf "/copias/datos-${FECHA}.tar.gz.parcial" \
-                    --warning=no-file-changed \
-                    --exclude='./nextcloud.log' \
-                    --exclude='./*/cache' \
-                    --exclude='./*/uploads' \
-                    -C /datos-nube .
-                  CODIGO=$?
-                  set -e
-                  if [ "$CODIGO" -gt 1 ]; then
-                    echo "tar termino con codigo $CODIGO"
-                    exit "$CODIGO"
-                  fi
+                    -C /datos --exclude='db.sqlite3*' --exclude='icon_cache' .
                   mv "/copias/datos-${FECHA}.tar.gz.parcial" "/copias/datos-${FECHA}.tar.gz"
 
                   echo "== Retencion: se conservan las 7 ultimas =="
-                  ls -1t /copias/base-*.dump    | tail -n +8 | xargs -r rm -f
+                  ls -1t /copias/base-*.sqlite3 | tail -n +8 | xargs -r rm -f
                   ls -1t /copias/datos-*.tar.gz | tail -n +8 | xargs -r rm -f
 
                   echo "== Contenido del almacen de copias =="
                   ls -lh /copias
               resources:
                 requests:
-                  cpu: 100m
-                  memory: 128Mi
+                  cpu: 50m
+                  memory: 64Mi
                 limits:
-                  memory: 512Mi
+                  memory: 256Mi
               volumeMounts:
                 - name: copias
                   mountPath: /copias
-                - name: datos-nube
-                  mountPath: /datos-nube
-                  subPath: data
-                  readOnly: true
+                - name: datos
+                  mountPath: /datos
           volumes:
             - name: copias
               persistentVolumeClaim:
-                claimName: copias-nube
-            - name: datos-nube
+                claimName: copias-vault
+            - name: datos
               persistentVolumeClaim:
-                claimName: nextcloud-nextcloud
-                readOnly: true
+                claimName: vaultwarden-datos
