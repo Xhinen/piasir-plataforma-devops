@@ -26,6 +26,9 @@ spec:
     spec:
       backoffLimit: 2
       template:
+        metadata:
+          labels:
+            acceso-base-de-datos: "si"
         spec:
           restartPolicy: OnFailure
           containers:
