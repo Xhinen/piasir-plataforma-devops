@@ -46,7 +46,7 @@ spec:
                   rm -f /copias/*.parcial
 
                   echo "== Preparando la herramienta =="
-                  apk add --no-cache sqlite > /dev/null
+                  apk add --no-cache sqlite tzdata > /dev/null
 
                   echo "== Copia consistente de la base de datos =="
                   sqlite3 /datos/db.sqlite3 \
