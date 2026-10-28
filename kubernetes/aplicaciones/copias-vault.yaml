@@ -40,14 +40,14 @@ spec:
                 - -c
                 - |
                   set -eu
-                  FECHA=$(date +%Y%m%d-%H%M)
-
-                  echo "== Limpieza de copias incompletas anteriores =="
-                  rm -f /copias/*.parcial
 
                   echo "== Preparando la herramienta =="
                   apk add --no-cache sqlite tzdata > /dev/null
 
+                  FECHA=$(date +%Y%m%d-%H%M)
+
+                  echo "== Limpieza de copias incompletas anteriores =="
+                  rm -f /copias/*.parcial
                   echo "== Copia consistente de la base de datos =="
                   sqlite3 /datos/db.sqlite3 \
                     "VACUUM INTO '/copias/base-${FECHA}.sqlite3.parcial'"
