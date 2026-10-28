@@ -1,0 +1,96 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: copias-nube
+  namespace: nube
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: copia-nube
+  namespace: nube
+spec:
+  schedule: "30 3 * * *"
+  timeZone: Europe/Madrid
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: copia
+              image: postgres:17.11
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: TZ
+                  value: Europe/Madrid
+                - name: PGHOST
+                  value: postgresql.nube.svc.cluster.local
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-credenciales
+                      key: POSTGRES_USER
+                - name: PGDATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-credenciales
+                      key: POSTGRES_DB
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-credenciales
+                      key: POSTGRES_PASSWORD
+              command:
+                - bash
+                - -c
+                - |
+                  set -euo pipefail
+                  FECHA=$(date +%Y%m%d-%H%M)
+
+                  echo "== Volcado de la base de datos =="
+                  pg_dump --format=custom --no-owner --no-privileges \
+                    --file="/copias/base-${FECHA}.dump.parcial"
+                  mv "/copias/base-${FECHA}.dump.parcial" "/copias/base-${FECHA}.dump"
+
+                  echo "== Empaquetado de los datos de usuario =="
+                  tar czf "/copias/datos-${FECHA}.tar.gz.parcial" -C /datos-nube .
+                  mv "/copias/datos-${FECHA}.tar.gz.parcial" "/copias/datos-${FECHA}.tar.gz"
+
+                  echo "== Retencion: se conservan las 7 ultimas =="
+                  ls -1t /copias/base-*.dump    | tail -n +8 | xargs -r rm -f
+                  ls -1t /copias/datos-*.tar.gz | tail -n +8 | xargs -r rm -f
+
+                  echo "== Contenido del almacen de copias =="
+                  ls -lh /copias
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  memory: 512Mi
+              volumeMounts:
+                - name: copias
+                  mountPath: /copias
+                - name: datos-nube
+                  mountPath: /datos-nube
+                  readOnly: true
+          volumes:
+            - name: copias
+              persistentVolumeClaim:
+                claimName: copias-nube
+            - name: datos-nube
+              persistentVolumeClaim:
+                claimName: nextcloud-nextcloud
+                readOnly: true
