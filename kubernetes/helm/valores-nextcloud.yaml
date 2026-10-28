@@ -75,6 +75,10 @@ cronjob:
   type: cronjob
   cronjob:
     schedule: "*/5 * * * *"
+    securityContext:
+      runAsUser: 33
+      runAsGroup: 33
+      runAsNonRoot: true
 
 ingress:
   enabled: false
