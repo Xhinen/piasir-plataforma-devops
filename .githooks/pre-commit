@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+#
+# Enlace de pre-confirmacion.
+# Vive en .githooks/ para que este versionado y viaje con el repositorio.
+# Se activa una sola vez por copia de trabajo con:
+#
+#   git config core.hooksPath .githooks
+#
+exec "$(git rev-parse --show-toplevel)/scripts/comprobar-manifiestos.sh"
