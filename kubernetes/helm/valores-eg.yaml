@@ -1,2 +1,4 @@
-USER-SUPPLIED VALUES:
-null
+# Envoy Gateway se instala con los valores por omision del grafico.
+# Este fichero existe para dejar constancia explicita de esa decision
+# y para que cualquier ajuste futuro tenga un sitio evidente donde ir.
+{}
