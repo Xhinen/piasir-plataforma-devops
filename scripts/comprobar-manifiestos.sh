@@ -164,6 +164,28 @@ for fichero in "$DIRECTORIO_MANIFIESTOS"/aplicaciones/copias-*.yaml; do
   fi
 done
 
+# Incidencia 42: con un plazo corto, una ejecucion perdida no se recupera nunca
+# en una instalacion que se apaga por las noches.
+for fichero in "$DIRECTORIO_MANIFIESTOS"/aplicaciones/copias-*.yaml; do
+  [ -f "$fichero" ] || continue
+  comprobar_contiene "$fichero" 'startingDeadlineSeconds: 43200' \
+    "$(basename "$fichero") declara plazo de recuperacion de 12 horas"
+  comprobar_contiene "$fichero" 'restartPolicy: Never' \
+    "$(basename "$fichero") conserva los pods fallidos"
+done
+
+# Incidencia 43: un bloque de entorno vacio es YAML valido y pasa la validacion,
+# pero deja al contenedor de espera sin saber donde esta la base de datos.
+for base in copias-forja copias-nube; do
+  ruta="$DIRECTORIO_MANIFIESTOS/aplicaciones/${base}.yaml"
+  [ -f "$ruta" ] || continue
+  if [ "$(grep -c 'PGHOST' "$ruta")" -eq 2 ]; then
+    verde "${base}: los dos contenedores tienen su entorno"
+  else
+    rojo "${base}: se esperaban dos PGHOST, el de espera y el principal"
+  fi
+done
+
 # ---------------------------------------------------------------------------
 titulo "Resultado"
 

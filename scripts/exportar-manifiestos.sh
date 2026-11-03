@@ -150,14 +150,11 @@ echo "== Componentes instalados con Helm ===================================="
 helm list --all-namespaces --output yaml > kubernetes/helm/instalaciones.yaml
 echo "  kubernetes/helm/instalaciones.yaml            ok"
 
-helm list --all-namespaces --output json \
-  | python3 -I -c 'import sys,json; [print(r["name"], r["namespace"]) for r in json.load(sys.stdin)]' \
-  | while read -r nombre espacio; do
-        destino="kubernetes/helm/valores-${nombre}.yaml"
-        printf '  %-46s' "$destino"
-        helm get values "$nombre" -n "$espacio" > "$destino"
-        echo "ok"
-    done
+# Los ficheros de valores de kubernetes/helm/ NO se exportan: se escriben a
+# mano y son la fuente desde la que se instala cada componente. Volcarlos
+# desde el cluster con 'helm get values' los sustituiria por un informe que
+# Helm no admite como entrada, destruyendo la fuente de verdad.
+echo "  kubernetes/helm/valores-*.yaml               se mantienen a mano"
 
 echo
 echo "== Comprobacion: el cluster acepta lo exportado ======================="
