@@ -1,0 +1,38 @@
+# Configuracion del proxy de la pasarela.
+#
+# Dos replicas repartidas obligatoriamente entre nodos: sin esto, drenar el
+# nodo que aloja el unico proxy corta la entrada de trafico de toda la
+# plataforma.
+#
+# La estrategia de actualizacion reemplaza de uno en uno SIN crear un pod
+# excedente. Con dos nodos y reparto estricto, un tercer pod no cabe en
+# ninguna parte y la actualizacion se queda bloqueada para siempre.
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: proxy-alta-disponibilidad
+  namespace: envoy-gateway-system
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        replicas: 2
+        strategy:
+          type: RollingUpdate
+          rollingUpdate:
+            maxSurge: 0
+            maxUnavailable: 1
+        pod:
+          topologySpreadConstraints:
+            - maxSkew: 1
+              topologyKey: kubernetes.io/hostname
+              whenUnsatisfiable: DoNotSchedule
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: envoy
+                  gateway.envoyproxy.io/owning-gateway-name: mi-gateway
+                  gateway.envoyproxy.io/owning-gateway-namespace: portfolio
+      envoyPDB:
+        minAvailable: 1
