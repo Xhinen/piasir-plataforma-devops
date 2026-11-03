@@ -26,6 +26,13 @@ spec:
       labels:
         app: portfolio
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: portfolio
       containers:
       - image: ghcr.io/xhinen/portfolio:1.0
         imagePullPolicy: IfNotPresent

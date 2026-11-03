@@ -1,0 +1,16 @@
+# Presupuesto de interrupcion del sitio web municipal.
+#
+# Obliga a que el drenaje de un nodo espere a que quede al menos un pod
+# disponible en otro. Sin esto, 'kubectl drain' desaloja sin preguntar y la
+# web se cae aunque existan replicas.
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: portfolio
+  namespace: portfolio
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: portfolio
