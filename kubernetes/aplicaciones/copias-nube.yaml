@@ -19,6 +19,7 @@ metadata:
 spec:
   schedule: "30 3 * * *"
   timeZone: Europe/Madrid
+  startingDeadlineSeconds: 43200
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
@@ -30,7 +31,27 @@ spec:
           labels:
             acceso-base-de-datos: "si"
         spec:
-          restartPolicy: OnFailure
+          restartPolicy: Never
+          initContainers:
+            - name: esperar-base-de-datos
+              image: postgres:17.11
+              imagePullPolicy: IfNotPresent
+              command:
+                - sh
+                - -c
+                - |
+                  intentos=0
+                  until pg_isready -q; do
+                    intentos=$((intentos + 1))
+                    if [ "$intentos" -gt 60 ]; then
+                      echo "la base de datos no responde tras cinco minutos"
+                      exit 1
+                    fi
+                    echo "esperando a la base de datos..."
+                    sleep 5
+                  done
+                  echo "base de datos disponible"
+              env:
           containers:
             - name: copia
               image: postgres:17.11

@@ -19,6 +19,7 @@ metadata:
 spec:
   schedule: "45 3 * * *"
   timeZone: Europe/Madrid
+  startingDeadlineSeconds: 43200
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
@@ -27,7 +28,7 @@ spec:
       backoffLimit: 2
       template:
         spec:
-          restartPolicy: OnFailure
+          restartPolicy: Never
           containers:
             - name: copia
               image: alpine:3.24.3
