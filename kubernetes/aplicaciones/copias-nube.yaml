@@ -52,6 +52,23 @@ spec:
                   done
                   echo "base de datos disponible"
               env:
+                - name: PGHOST
+                  value: postgresql.forja.svc.cluster.local
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-credenciales
+                      key: POSTGRES_USER
+                - name: PGDATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-credenciales
+                      key: POSTGRES_DB
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-credenciales
+                      key: POSTGRES_PASSWORD
           containers:
             - name: copia
               image: postgres:17.11
