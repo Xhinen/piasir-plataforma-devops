@@ -1,0 +1,117 @@
+== Medicion de disponibilidad ==
+inicio:    2026-11-03 17:10:01
+intervalo: 1s
+maquinas:  6
+  - argocd.sierraalta.internal
+  - forja.sierraalta.internal
+  - grafana.sierraalta.internal
+  - nube.sierraalta.internal
+  - portfolio.sierraalta.internal
+  - vault.sierraalta.internal
+
+Una linea por sonda. FALLO marca codigo >= 400 o sin respuesta.
+Detener con Ctrl+C para obtener el resumen.
+
+17:10:01 argocd.sierraalta.internal 200
+17:10:01 forja.sierraalta.internal 200
+17:10:01 grafana.sierraalta.internal 302
+17:10:01 nube.sierraalta.internal 302
+17:10:01 portfolio.sierraalta.internal 200
+17:10:01 vault.sierraalta.internal 200
+17:10:02 argocd.sierraalta.internal 200
+17:10:02 forja.sierraalta.internal 200
+17:10:02 grafana.sierraalta.internal 302
+17:10:02 nube.sierraalta.internal 302
+17:10:02 portfolio.sierraalta.internal 200
+17:10:02 vault.sierraalta.internal 200
+17:10:03 argocd.sierraalta.internal 200
+17:10:03 forja.sierraalta.internal 200
+17:10:03 grafana.sierraalta.internal 302
+17:10:03 nube.sierraalta.internal 302
+17:10:03 portfolio.sierraalta.internal 200
+17:10:03 vault.sierraalta.internal 200
+17:10:04 argocd.sierraalta.internal 200
+17:10:04 forja.sierraalta.internal 200
+17:10:04 grafana.sierraalta.internal 302
+17:10:04 nube.sierraalta.internal 302
+17:10:04 portfolio.sierraalta.internal 200
+17:10:04 vault.sierraalta.internal 200
+17:10:05 argocd.sierraalta.internal 200
+17:10:05 forja.sierraalta.internal 200
+17:10:05 grafana.sierraalta.internal 302
+17:10:05 nube.sierraalta.internal 302
+17:10:05 portfolio.sierraalta.internal 200
+17:10:05 vault.sierraalta.internal 200
+17:10:06 argocd.sierraalta.internal 200
+17:10:06 forja.sierraalta.internal 200
+17:10:06 grafana.sierraalta.internal 302
+17:10:06 nube.sierraalta.internal 302
+17:10:06 portfolio.sierraalta.internal 200
+17:10:06 vault.sierraalta.internal 200
+17:10:07 argocd.sierraalta.internal 200
+17:10:07 forja.sierraalta.internal 200
+17:10:07 grafana.sierraalta.internal 302
+17:10:07 nube.sierraalta.internal 302
+17:10:07 portfolio.sierraalta.internal 200
+17:10:07 vault.sierraalta.internal 200
+17:10:09 argocd.sierraalta.internal 200
+17:10:09 forja.sierraalta.internal 200
+17:10:09 grafana.sierraalta.internal 302
+17:10:09 nube.sierraalta.internal 302
+17:10:09 portfolio.sierraalta.internal 200
+17:10:09 vault.sierraalta.internal 200
+17:10:10 argocd.sierraalta.internal 200
+17:10:10 forja.sierraalta.internal 200
+17:10:10 grafana.sierraalta.internal 302
+17:10:10 nube.sierraalta.internal 302
+17:10:10 portfolio.sierraalta.internal 200
+17:10:10 vault.sierraalta.internal 200
+17:10:11 argocd.sierraalta.internal 200
+17:10:11 forja.sierraalta.internal 200
+17:10:11 grafana.sierraalta.internal 302
+17:10:11 nube.sierraalta.internal 302
+17:10:11 portfolio.sierraalta.internal 200
+17:10:11 vault.sierraalta.internal 200
+17:10:12 argocd.sierraalta.internal 200
+17:10:12 forja.sierraalta.internal 200
+17:10:12 grafana.sierraalta.internal 302
+17:10:12 nube.sierraalta.internal 302
+17:10:12 portfolio.sierraalta.internal 200
+17:10:12 vault.sierraalta.internal 200
+17:10:13 argocd.sierraalta.internal 200
+17:10:13 forja.sierraalta.internal 200
+17:10:13 grafana.sierraalta.internal 302
+17:10:13 nube.sierraalta.internal 302
+17:10:13 portfolio.sierraalta.internal 200
+17:10:13 vault.sierraalta.internal 200
+17:10:14 argocd.sierraalta.internal 200
+17:10:14 forja.sierraalta.internal 200
+17:10:14 grafana.sierraalta.internal 302
+17:10:14 nube.sierraalta.internal 302
+17:10:14 portfolio.sierraalta.internal 200
+17:10:14 vault.sierraalta.internal 200
+17:10:15 argocd.sierraalta.internal 200
+17:10:15 forja.sierraalta.internal 200
+17:10:15 grafana.sierraalta.internal 302
+17:10:15 nube.sierraalta.internal 302
+17:10:15 portfolio.sierraalta.internal 200
+17:10:15 vault.sierraalta.internal 200
+
+== Resumen ==
+fin: 2026-11-03 17:10:15
+MAQUINA                                    SONDAS  DISPONIBLES   FALLOS  SEG.CAIDA
+argocd.sierraalta.internal                     14           14        0          0
+forja.sierraalta.internal                      14           14        0          0
+grafana.sierraalta.internal                    14           14        0          0
+nube.sierraalta.internal                       14           14        0          0
+portfolio.sierraalta.internal                  14           14        0          0
+vault.sierraalta.internal                      14           14        0          0
+== drenaje de k8s-worker-02 iniciado: 2026-11-03 17:28:56 ==
+== k8s-worker-02 devuelto a servicio: 2026-11-03 17:34:55 ==
+== k8s-worker-02 devuelto a servicio: 2026-11-03 17:46:36 ==
+== servicios con estado recuperados: 2026-11-03 17:47:22 ==
+-- recuento ventana 1 --
+      1 SONDAS
+      1 linea
+== k8s-worker-02 actualizado y en servicio: 2026-11-03 17:48:49 ==
+== servicios con estado recuperados (ventana 2): 2026-11-03 17:49:17 ==

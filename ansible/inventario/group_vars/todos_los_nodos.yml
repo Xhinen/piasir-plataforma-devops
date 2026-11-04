@@ -29,10 +29,12 @@ fail2ban_bantime: "1h"
 # uso y el rol aplica el bloqueo para evitar que vuelva a desplazarse.
 version_containerd_paquete: "2.4.1-2~ubuntu.24.04~noble"
 
-# Version verificada el 12-10-2026. Los tres paquetes permanecen en 1.36.2
-# pese a existir 1.36.5 en el repositorio, porque estaban retenidos con
-# 'apt-mark hold'. Contrasta con containerd, que no lo estaba y se desplazo.
-version_kubernetes_paquete: "1.36.2-2.1"
+# Actualizado el 03-11-2026 de 1.36.2 a 1.36.6 (tarea R02F03), nodo a nodo y
+# sin interrupcion del servicio publico. Los tres paquetes siguen retenidos
+# con 'apt-mark hold': la actualizacion se hace de forma deliberada y nunca
+# por arrastre de un 'apt upgrade'. Se permanece en la rama 1.36 porque
+# Calico 3.32 no esta validado contra Kubernetes 1.37.
+version_kubernetes_paquete: "1.36.6-1.1"
 
 # Rama del repositorio de Kubernetes, sin el numero de parche.
 version_kubernetes_rama: "v1.36"

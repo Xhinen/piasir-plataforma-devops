@@ -1,0 +1,12 @@
+Events:
+  Type     Reason            Age   From               Message
+  ----     ------            ----  ----               -------
+  Warning  FailedScheduling  11m   default-scheduler  0/3 nodes are available: 1 node(s) didn't match pod topology spread constraints, 1 node(s) had untolerated taint(s), 1 node(s) were unschedulable. no new claims to deallocate, preemption: 0/3 nodes are available: 1 No preemption victims found for incoming pod, 2 Preemption is not helpful for scheduling.
+  Warning  FailedScheduling  11m   default-scheduler  0/3 nodes are available: 1 node(s) didn't match pod topology spread constraints, 1 node(s) had untolerated taint(s), 1 node(s) were unschedulable. no new claims to deallocate, preemption: 0/3 nodes are available: 1 No preemption victims found for incoming pod, 2 Preemption is not helpful for scheduling.
+  Normal   Scheduled         8m5s  default-scheduler  Successfully assigned envoy-gateway-system/envoy-portfolio-mi-gateway-c5b29929-544dfb7b7c-vjx62 to k8s-worker
+  Normal   Pulled            8m5s  kubelet            spec.containers{envoy}: Container image "docker.io/envoyproxy/envoy:distroless-v1.35.6" already present on machine and can be accessed by the pod
+  Normal   Created           8m5s  kubelet            spec.containers{envoy}: Container created
+  Normal   Started           8m5s  kubelet            spec.containers{envoy}: Container started
+  Normal   Pulled            8m5s  kubelet            spec.containers{shutdown-manager}: Container image "docker.io/envoyproxy/gateway:v1.5.4" already present on machine and can be accessed by the pod
+  Normal   Created           8m5s  kubelet            spec.containers{shutdown-manager}: Container created
+  Normal   Started           8m5s  kubelet            spec.containers{shutdown-manager}: Container started

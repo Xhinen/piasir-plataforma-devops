@@ -1,0 +1,3 @@
+== Zona interna de CoreDNS: antes y despues de 'kubeadm upgrade apply' ==
+
+Sin diferencias: la zona sierraalta.internal sobrevivio a la actualizacion.

@@ -120,6 +120,17 @@ spec:
                   set -euo pipefail
 
                   destino=/copias
+                  # Registro persistente: vive en el volumen de copias, no
+                  # solo en el pod. Sobrevive al borrado del pod y permite
+                  # investigar un fallo dias despues.
+                  if [ -f "$destino/registro.log" ]; then
+                    tail -n 2000 "$destino/registro.log" > "$destino/registro.log.nuevo"
+                    mv "$destino/registro.log.nuevo" "$destino/registro.log"
+                  fi
+                  exec 3>&1
+                  trap 'tail -n 40 "$destino/registro.log" >&3' EXIT
+                  exec >> "$destino/registro.log" 2>&1
+                  echo "===== $(date '+%F %T') inicio ====="
                   marca=$(date +%Y%m%d-%H%M)
 
                   echo "== Limpieza de copias incompletas anteriores =="
@@ -134,7 +145,15 @@ spec:
                   echo "volcado legible"
 
                   echo "== Empaquetado del volumen de datos =="
-                  tar czf "$destino/datos-$marca.tar.gz.parcial" -C /datos-forja .
+                  estado_tar=0
+                  tar czf "$destino/datos-$marca.tar.gz.parcial" -C /datos-forja . || estado_tar=$?
+                  if [ "$estado_tar" -gt 1 ]; then
+                    echo "tar fallo con codigo $estado_tar" >&2
+                    exit "$estado_tar"
+                  fi
+                  if [ "$estado_tar" -eq 1 ]; then
+                    echo "aviso: algun fichero cambio durante el empaquetado"
+                  fi
                   mv "$destino/datos-$marca.tar.gz.parcial" "$destino/datos-$marca.tar.gz"
 
                   echo "== Retencion: se conservan los $RETENCION ultimos =="

@@ -41,7 +41,17 @@ spec:
                 - -c
                 - |
                   set -eu
-
+                  # Registro persistente: vive en el volumen de copias, no
+                  # solo en el pod. Sobrevive al borrado del pod y permite
+                  # investigar un fallo dias despues.
+                  if [ -f /copias/registro.log ]; then
+                    tail -n 2000 /copias/registro.log > /copias/registro.log.nuevo
+                    mv /copias/registro.log.nuevo /copias/registro.log
+                  fi
+                  exec 3>&1
+                  trap 'tail -n 40 /copias/registro.log >&3' EXIT
+                  exec >> /copias/registro.log 2>&1
+                  echo "===== $(date '+%F %T') inicio ====="
                   echo "== Preparando la herramienta =="
                   apk add --no-cache sqlite tzdata > /dev/null
 
@@ -59,8 +69,16 @@ spec:
                   echo "integridad correcta"
 
                   echo "== Empaquetado de adjuntos y material criptografico =="
+                  estado_tar=0
                   tar czf "/copias/datos-${FECHA}.tar.gz.parcial" \
-                    -C /datos --exclude='db.sqlite3*' --exclude='icon_cache' .
+                    -C /datos --exclude='db.sqlite3*' --exclude='icon_cache' . || estado_tar=$?
+                  if [ "$estado_tar" -gt 1 ]; then
+                    echo "tar fallo con codigo $estado_tar" >&2
+                    exit "$estado_tar"
+                  fi
+                  if [ "$estado_tar" -eq 1 ]; then
+                    echo "aviso: algun fichero cambio durante el empaquetado"
+                  fi
                   mv "/copias/datos-${FECHA}.tar.gz.parcial" "/copias/datos-${FECHA}.tar.gz"
 
                   echo "== Retencion: se conservan las 7 ultimas =="

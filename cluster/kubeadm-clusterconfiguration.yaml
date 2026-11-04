@@ -1,0 +1,63 @@
+# Configuracion del clustér gestionada por kubeadm.
+#
+# Este fichero es la fuente de verdad de los manifiestos de los pods
+# estaticos del plano de control. kubeadm lo guarda en el mapa de
+# configuracion "kubeadm-config" del espacio "kube-system" y lo vuelve a
+# leer en cada "kubeadm upgrade apply", de modo que lo declarado aqui
+# sobrevive a las actualizaciones.
+#
+# Lo que se edite a mano en /etc/kubernetes/manifests/ NO sobrevive: la
+# actualizacion a v1.36.6 del 3 de noviembre de 2026 regenero los tres
+# manifiestos y devolvio los argumentos de abajo a sus valores por
+# defecto, dejando a Prometheus sin acceso a las metricas del plano de
+# control durante un dia entero.
+#
+# Para aplicar cambios (desde el nodo de control):
+#   sudo kubeadm init phase upload-config kubeadm --config <este fichero>
+#   sudo kubeadm init phase control-plane controller-manager --config <este fichero>
+#   sudo kubeadm init phase control-plane scheduler --config <este fichero>
+#   sudo kubeadm init phase etcd local --config <este fichero>
+
+apiServer: {}
+apiVersion: kubeadm.k8s.io/v1beta4
+caCertificateValidityPeriod: 87600h0m0s
+certificateValidityPeriod: 8760h0m0s
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+
+# bind-address: por defecto 127.0.0.1, con lo que las metricas solo son
+# accesibles desde el propio nodo y Prometheus, que raspa desde otro
+# nodo, no llega. Se expone en todas las interfaces del nodo.
+controllerManager:
+  extraArgs:
+    - name: bind-address
+      value: 0.0.0.0
+
+dns: {}
+encryptionAlgorithm: RSA-2048
+
+# listen-metrics-urls: mismo motivo. Atencion: este extremo sirve solo
+# metricas y comprobaciones de salud, sin autenticacion, por lo que
+# queda accesible desde la red del laboratorio. Aceptable aqui; en
+# produccion se limitaria a la direccion del nodo y se cerraria con
+# reglas de cortafuegos.
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+    extraArgs:
+      - name: listen-metrics-urls
+        value: http://0.0.0.0:2381
+
+imageRepository: registry.k8s.io
+kind: ClusterConfiguration
+kubernetesVersion: v1.36.6
+networking:
+  dnsDomain: cluster.local
+  podSubnet: 10.244.0.0/16
+  serviceSubnet: 10.96.0.0/12
+proxy: {}
+
+scheduler:
+  extraArgs:
+    - name: bind-address
+      value: 0.0.0.0
