@@ -1,0 +1,144 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    batch.kubernetes.io/cronjob-scheduled-timestamp: "2026-11-03T03:30:00+01:00"
+  creationTimestamp: "2026-11-03T07:43:47Z"
+  generation: 1
+  labels:
+    acceso-base-de-datos: si
+    batch.kubernetes.io/controller-uid: 1543b5ef-a7b9-4cfa-93f7-7371b6af3aad
+    batch.kubernetes.io/job-name: copia-nube-29894550
+    controller-uid: 1543b5ef-a7b9-4cfa-93f7-7371b6af3aad
+    job-name: copia-nube-29894550
+  name: copia-nube-29894550
+  namespace: nube
+  ownerReferences:
+  - apiVersion: batch/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: CronJob
+    name: copia-nube
+    uid: ea38a4a9-afa1-4dde-9275-39dc90c83d46
+  resourceVersion: "1209851"
+  uid: 1543b5ef-a7b9-4cfa-93f7-7371b6af3aad
+spec:
+  backoffLimit: 2
+  completionMode: NonIndexed
+  completions: 1
+  manualSelector: false
+  parallelism: 1
+  podReplacementPolicy: TerminatingOrFailed
+  selector:
+    matchLabels:
+      batch.kubernetes.io/controller-uid: 1543b5ef-a7b9-4cfa-93f7-7371b6af3aad
+  suspend: false
+  template:
+    metadata:
+      labels:
+        acceso-base-de-datos: si
+        batch.kubernetes.io/controller-uid: 1543b5ef-a7b9-4cfa-93f7-7371b6af3aad
+        batch.kubernetes.io/job-name: copia-nube-29894550
+        controller-uid: 1543b5ef-a7b9-4cfa-93f7-7371b6af3aad
+        job-name: copia-nube-29894550
+    spec:
+      containers:
+      - command:
+        - bash
+        - -c
+        - |
+          set -euo pipefail
+          FECHA=$(date +%Y%m%d-%H%M)
+
+          echo "== Limpieza de copias incompletas anteriores =="
+          rm -f /copias/*.parcial
+
+          echo "== Volcado de la base de datos =="
+          pg_dump --format=custom --no-owner --no-privileges \
+            --file="/copias/base-${FECHA}.dump.parcial"
+          mv "/copias/base-${FECHA}.dump.parcial" "/copias/base-${FECHA}.dump"
+
+          echo "== Verificacion de la copia =="
+          pg_restore --list "/copias/base-${FECHA}.dump" > /dev/null
+          echo "volcado legible"
+
+          echo "== Empaquetado de los datos de usuario =="
+          tar czf "/copias/datos-${FECHA}.tar.gz.parcial" -C /datos-nube .
+          mv "/copias/datos-${FECHA}.tar.gz.parcial" "/copias/datos-${FECHA}.tar.gz"
+
+          echo "== Retencion: se conservan las 7 ultimas =="
+          ls -1t /copias/base-*.dump    | tail -n +8 | xargs -r rm -f
+          ls -1t /copias/datos-*.tar.gz | tail -n +8 | xargs -r rm -f
+
+          echo "== Contenido del almacen de copias =="
+          ls -lh /copias
+        env:
+        - name: TZ
+          value: Europe/Madrid
+        - name: PGHOST
+          value: postgresql.nube.svc.cluster.local
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              key: POSTGRES_USER
+              name: postgres-credenciales
+        - name: PGDATABASE
+          valueFrom:
+            secretKeyRef:
+              key: POSTGRES_DB
+              name: postgres-credenciales
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: POSTGRES_PASSWORD
+              name: postgres-credenciales
+        image: postgres:17.11
+        imagePullPolicy: IfNotPresent
+        name: copia
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /copias
+          name: copias
+        - mountPath: /datos-nube
+          name: datos-nube
+          readOnly: true
+          subPath: data
+      dnsPolicy: ClusterFirst
+      restartPolicy: OnFailure
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: copias
+        persistentVolumeClaim:
+          claimName: copias-nube
+      - name: datos-nube
+        persistentVolumeClaim:
+          claimName: nextcloud-nextcloud
+          readOnly: true
+status:
+  conditions:
+  - lastProbeTime: "2026-11-03T07:44:19Z"
+    lastTransitionTime: "2026-11-03T07:44:19Z"
+    message: Job has reached the specified backoff limit
+    reason: BackoffLimitExceeded
+    status: "True"
+    type: FailureTarget
+  - lastProbeTime: "2026-11-03T07:44:28Z"
+    lastTransitionTime: "2026-11-03T07:44:28Z"
+    message: Job has reached the specified backoff limit
+    reason: BackoffLimitExceeded
+    status: "True"
+    type: Failed
+  failed: 1
+  ready: 0
+  startTime: "2026-11-03T07:43:47Z"
+  terminating: 0
+  uncountedTerminatedPods: {}
