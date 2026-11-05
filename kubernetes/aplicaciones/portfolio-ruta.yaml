@@ -21,7 +21,12 @@ spec:
       kind: Service
       name: portfolio-service
       port: 80
-      weight: 100
+      weight: 90
+    - group: ''
+      kind: Service
+      name: portfolio-v2-service
+      port: 80
+      weight: 10
     matches:
     - path:
         type: PathPrefix
