@@ -1,0 +1,61 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Espacios de nombres" id="ns-sierra-alta">
+    <mxGraphModel dx="2035" dy="1139" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="lan" value="Red de la entidad — acceso por 192.168.18.240" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=#44507A;fillColor=#44507A;fontSize=12;fontColor=#FFFFFF;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="100" y="40" width="1300" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="gw" value="envoy-gateway-system&lt;br&gt;pasarela de entrada" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=#263E69;fillColor=#DFE4F5;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="560" y="140" width="380" height="66" as="geometry" />
+        </mxCell>
+        <mxCell id="gprot" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=#2F6B5F;fillColor=#EFF7F4;fontSize=12;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="100" y="276" width="620" height="536" as="geometry" />
+        </mxCell>
+        <mxCell id="gabier" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=#B67614;fillColor=#FDF6E8;fontSize=12;dashed=1;dashPattern=9 7;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="780" y="276" width="620" height="536" as="geometry" />
+        </mxCell>
+        <mxCell id="portfolio" value="&lt;b&gt;portfolio&lt;/b&gt;&lt;br&gt;web municipal — tres réplicas&lt;br&gt;default-deny-ingress&lt;br&gt;allow-from-gateway (puerto 80)" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=#2F6B5F;fillColor=#D9ECE5;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="140" y="348" width="540" height="122" as="geometry" />
+        </mxCell>
+        <mxCell id="vault" value="&lt;b&gt;vault&lt;/b&gt;&lt;br&gt;gestor de contraseñas&lt;br&gt;default-deny-ingress&lt;br&gt;allow-from-gateway" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=#2F6B5F;fillColor=#D9ECE5;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="140" y="488" width="540" height="122" as="geometry" />
+        </mxCell>
+        <mxCell id="nube" value="&lt;b&gt;nube&lt;/b&gt;&lt;br&gt;almacenamiento de documentos · base de datos · caché&lt;br&gt;default-deny-ingress · allow-from-gateway&lt;br&gt;&lt;i&gt;allow-interno: solo la aplicación alcanza la base de datos y la caché&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=#2F6B5F;fillColor=#D9ECE5;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="140" y="628" width="540" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="forja" value="&lt;b&gt;forja&lt;/b&gt;&lt;br&gt;forja de código, su base de datos y el registro de imágenes" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=#B67614;fillColor=#FBEDD2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="820" y="348" width="540" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="argocd" value="&lt;b&gt;argocd&lt;/b&gt;&lt;br&gt;despliegue continuo · políticas propias del gráfico, sin denegación por defecto" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=#B67614;fillColor=#FBEDD2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="820" y="458" width="540" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="monitor" value="&lt;b&gt;monitoring&lt;/b&gt;&lt;br&gt;métricas, paneles y gestor de avisos" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=#B67614;fillColor=#FBEDD2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="820" y="568" width="540" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="plat" value="&lt;b&gt;cert-manager · sealed-secrets · metallb-system&lt;/b&gt;&lt;br&gt;componentes de plataforma, sin entrada desde la red de la entidad" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=#B67614;fillColor=#FBEDD2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="820" y="678" width="540" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="leyenda" value="&lt;b&gt;Trazo continuo&lt;/b&gt;: el espacio de nombres deniega por defecto el tráfico entrante y lo autoriza por excepción.&lt;br&gt;&lt;b&gt;Trazo discontinuo&lt;/b&gt;: no existe política propia, de modo que cualquier pod del clúster puede alcanzar sus servicios.&lt;br&gt;Extender la denegación por defecto al resto de la plataforma figura entre los trabajos futuros." style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=#555555;fillColor=#FFFFFF;fontSize=12;align=left;spacingLeft=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="100" y="846" width="1300" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="t1" value="&lt;b&gt;Con denegación por defecto del tráfico entrante&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=15;fontColor=#235349;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="100" y="288" width="620" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="t2" value="&lt;b&gt;Sin política de red propia&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=15;fontColor=#8A590F;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="780" y="288" width="620" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="a0" value="autorizado por excepción" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#2F6B5F;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="gw" target="gprot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" value="sin restricción" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#B67614;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;dashed=1;dashPattern=9 7;" edge="1" parent="1" source="gw" target="gabier">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#3A5178;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="lan" target="gw">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
