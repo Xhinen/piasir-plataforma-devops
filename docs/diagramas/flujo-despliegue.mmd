@@ -1,0 +1,27 @@
+flowchart TD
+    A("1 - El desarrollador publica el cambio<br/>en la forja interna")
+    B("2 - La integración continua construye<br/>la imagen del contenedor")
+    C("3 - Análisis de vulnerabilidades de la imagen")
+    D("4 - Publicación en el registro interno<br/>con etiqueta de versión")
+    E("5 - Actualización de la referencia de imagen<br/>en el repositorio de manifiestos &lpar;manual&rpar;")
+    F("6 - El controlador detecta la diferencia<br/>y sincroniza el clúster")
+    G("7 - Reparto progresivo del tráfico<br/>hacia la nueva versión")
+    H("8 - La pasarela de entrada atiende<br/>a las personas usuarias")
+    X("Flujo detenido")
+
+    A --> B
+    B --> C
+    C -->|"sin hallazgos críticos"| D
+    C --> X
+    D -.->|"intervención manual"| E
+    E --> F
+    F --> G
+    G -.->|"reversión desde el repositorio"| F
+    G --> H
+
+    classDef control stroke:#d79921,fill:#2b2011,color:#f2f2f2,stroke-width:2px
+    classDef parada stroke:#cc6666,fill:#2b1616,color:#f2f2f2,stroke-width:2px
+    classDef manual stroke-dasharray:7 5
+    class C control
+    class X parada
+    class E manual
